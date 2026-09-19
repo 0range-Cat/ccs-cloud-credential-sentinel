@@ -2,13 +2,15 @@
 
 > 每次会话结束前更新。禁止记录真实密钥。
 
-## 当前状态（2026-09-19，会话2结束：阶段2 GitHub 实采完成）
+## 当前状态（2026-09-19，会话2结束：阶段2 完成收尾 + 阶段3 制品渠道完成）
 
 - 分支：main；最近提交见 `git log --oneline`。
 - 阶段0/1 全部 done；阶段2：T2.1/2.2/2.3/2.5(博客园+SO+通用)/2.6/2.7 done，T2.4 微博 blocked。
 - 测试证据：`cd backend && .venv/Scripts/python -m pytest` → **54 passed**。
-- **live_verified 渠道 5 个**：GitHub（认证态实采 12 文件+53 条历史内容；验证器 valid/invalid 实证）、
-  Gitee、中文维基百科、博客园 RSS、Stack Overflow。
+- **live_verified 渠道 7 个**：GitHub（认证态实采 12 文件+53 条历史内容；验证器 valid/invalid 实证）、
+  Gitee、中文维基百科、博客园 RSS、Stack Overflow、OCI 容器镜像（alpine:latest 匿名实采 40 条层文件）、
+  Android APK（F-Droid 官方包 25 条内容）。全量测试 **58 passed**。
+- 采集器共 9 个：github/gitee/mediawiki/generic_web/stackoverflow/local_dir/archive/oci_registry/apk。
 - 用户 Token：仅存 data/github.token（gitignored）+ 设置库 Fernet 加密；**建议实验后吊销轮换**。
 - 交付/答辩口径单一来源：docs/DELIVERABLES.md（四交付件+五评价维度→真实数字）。
 
@@ -16,9 +18,11 @@
 
 1. **受控"泄露→发现时延"实验**（评价维度5）：需用户给 Token 追加该仓库 Contents:write
    （步骤在 DELIVERABLES.md §三）；完成后自动回填 P50/P95。
-2. 阶段3：容器镜像（Docker Hub 匿名流程已调研打通）→ tar 层解析/whiteout → APK（Androguard）。
-3. 阶段4：验证器扩展（AWS STS GetCallerIdentity 等，逐个最小认证审查）。
-4. CSDN/掘金合规抓取评估（无官方接口）。
+2. T3.3 小程序产物：wxapkg 专用解析（解包目录已可经本地导入扫描）。
+3. 阶段4：验证器扩展（AWS STS GetCallerIdentity、Gitee、Slack auth.test、Telegram getMe 等，
+   逐个最小认证审查后接入）；Androguard 安装以解析 APK manifest。
+4. 阶段5：Ubuntu/Docker 部署验证、PostgreSQL 冒烟、Playwright 界面测试、评估报告定稿。
+5. CSDN/掘金合规抓取评估（无官方接口）。
 
 ## 环境事实（勿重复踩坑）
 
@@ -29,6 +33,8 @@
 - MediaWiki formatversion=2 修订对象**无 revid 字段**，按 pageid 映射。
 - Stack Overflow `quota_remaining:0` 判断勿写 `x or 1`（falsy 陷阱）。
 - Gitee 匿名限流随共享 IP 波动：实采可行但随时可能 403 → 已验证优雅停止。
+- Docker Hub blob 会 307 到 CDN：**采集层**需 follow_redirects=True（验证器仍严格禁重定向）。
+- MediaWiki formatversion=2 修订对象无 revid（按 pageid 映射）；维基媒体拒通用 UA（403）。
 - 本机 live 检查脚本：`cd backend && .venv/Scripts/python ../scripts/live_check.py`（独立库 data/live.db）。
 
 ## 关键技术决策
