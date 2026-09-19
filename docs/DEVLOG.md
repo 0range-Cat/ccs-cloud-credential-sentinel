@@ -106,3 +106,36 @@
 - 四渠道真实内容未检出凭据候选（credentials_total=0，如实记录，不冒充发现）。
 - 能力清单：Gitee/MediaWiki/博客园/SO/通用订阅 → live_verified；微博 → blocked。
 - 最终测试：**54 passed**（2026-09-19）。live 数据保留在 data/live.db（已 gitignore）。
+
+## 2026-09-19（会话2续：GitHub 认证实采 + 验证实证）
+
+### Token 处理（安全）
+
+- 用户提供 fine-grained PAT（聊天中出现 → 建议实验后吊销轮换）。
+- 落地：仅写入 `data/github.token`（gitignore 已验证）+ 系统设置库 Fernet 加密；
+  未写入任何文档/代码/日志/Git（提交前 `git grep` 复查）。
+
+### 权限探测
+
+- `/user` 200；认证配额 4999/5000 → **此前匿名 403 确为共享 IP 配额限制**。
+- 账号 0range-Cat；仅一个公开仓库 `0range-Cat.github.io`（push/admin 显示 true，
+  但 fine-grained 实际无 Contents:write —— PUT contents 全部 403
+  "Resource not accessible by personal access token"）。
+- 建新仓库 403（无 Administration 权限）。
+- 结论：可读采集+验证可做；受控泄露实验需用户追加 Contents:write（已写配置需求）。
+
+### GitHub 认证态实采（live）
+
+- 用户公开仓库：12 个当前文件入库；**历史提交扫描 53 条内容入库**（游标增量生效）；
+  octocat/Hello-World 1 条。0 凭据候选（真实空结果，不冒充发现）。
+
+### 最小验证实证（live）
+
+- 用户自有凭据 → **valid（200，707ms）**；合成假凭据 → **invalid（401，779ms）**。
+- 首次真实调用暴露并修复：worker.http_factory 返回"工厂的工厂"与验证器契约不符 → TypeError。
+  mock 测试未覆盖真实工厂路径——已修复，54 项测试回归通过。
+
+### 文档
+
+- 新增 docs/DELIVERABLES.md：四项交付件 + 五个评价维度 → 真实数字与证据对照（答辩口径）。
+- GitHub 渠道状态 → live_verified；评价 4/5 的受控实验部分标注为待写权限后执行。

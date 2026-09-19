@@ -29,17 +29,14 @@ _thread: threading.Thread | None = None
 
 
 def http_factory():
+    """返回可直接使用的 httpx.AsyncClient（验证器契约：http_factory() 即客户端）。"""
     session_db = SessionLocal()
     try:
         proxy = settings_service.get_setting(session_db, "network.proxy") or None
         timeout = float(settings_service.get_setting(session_db, "network.timeout_seconds") or 20)
     finally:
         session_db.close()
-
-    def _make() -> httpx.AsyncClient:
-        return httpx.AsyncClient(timeout=timeout, proxy=proxy, follow_redirects=False)
-
-    return _make
+    return httpx.AsyncClient(timeout=timeout, proxy=proxy, follow_redirects=False)
 
 
 def enqueue(session, credential_id: int, requested_by: str = "single") -> dict:

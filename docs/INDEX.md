@@ -5,6 +5,7 @@
 | [../README.md](../README.md) | 项目简介、快速启动 | 持续维护 |
 | [../AGENTS.md](../AGENTS.md) | 开发规则与约定 | 持续维护 |
 | [MASTER_PROMPT.md](MASTER_PROMPT.md) | 任务完整约束存档 | 已固化 |
+| [DELIVERABLES.md](DELIVERABLES.md) | 四项交付件与评价维度→真实数字对照 | 答辩口径单一来源 |
 | [REQUIREMENTS.md](REQUIREMENTS.md) | 需求、评价指标、范围、验收映射 | 已确认 |
 | [RESEARCH.md](RESEARCH.md) | 开源工具与平台接口调研（含日期与链接） | 持续更新 |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | 架构、数据流、模块边界、技术决策 | 阶段0基线 |

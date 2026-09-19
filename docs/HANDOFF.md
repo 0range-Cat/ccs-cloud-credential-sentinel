@@ -2,23 +2,23 @@
 
 > 每次会话结束前更新。禁止记录真实密钥。
 
-## 当前状态（2026-09-19，会话2结束：阶段2 第一批完成）
+## 当前状态（2026-09-19，会话2结束：阶段2 GitHub 实采完成）
 
-- 分支：main；最近提交：1bc1b1d（四渠道 live_verified）。
+- 分支：main；最近提交见 `git log --oneline`。
 - 阶段0/1 全部 done；阶段2：T2.1/2.2/2.3/2.5(博客园+SO+通用)/2.6/2.7 done，T2.4 微博 blocked。
-- 测试证据：`cd backend && .venv/Scripts/python -m pytest` → **54 passed**（2026-09-19）。
-- live_verified 渠道（本机实采两轮验证）：Gitee、中文维基百科（MediaWiki）、博客园 RSS
-  （经通用采集）、Stack Overflow；数据在 data/live.db（gitignored）。
-- 可运行成果：7 个采集器（github/gitee/mediawiki/generic_web/stackoverflow/local_dir/archive）、
-  35 条规则、验证模块（默认关）、中文界面（六页+种子发现）、游标增量与限流语义。
+- 测试证据：`cd backend && .venv/Scripts/python -m pytest` → **54 passed**。
+- **live_verified 渠道 5 个**：GitHub（认证态实采 12 文件+53 条历史内容；验证器 valid/invalid 实证）、
+  Gitee、中文维基百科、博客园 RSS、Stack Overflow。
+- 用户 Token：仅存 data/github.token（gitignored）+ 设置库 Fernet 加密；**建议实验后吊销轮换**。
+- 交付/答辩口径单一来源：docs/DELIVERABLES.md（四交付件+五评价维度→真实数字）。
 
 ## 下一步（按优先级）
 
-1. **GitHub 真实验收**：请用户执行 docs/DEMO.md，或提供只读 PAT 由会话执行
-   （本机 api.github.com=403 为共享 IP 配额；raw 200）。
-2. 阶段2 收尾：CSDN/掘金合规抓取评估（无官方接口，谨慎、只读、遵守 robots 与频率）。
-3. 阶段3：容器镜像（Docker Hub 匿名 token 流程调研已打通）→ tar 层解析 → APK（Androguard）。
-4. 阶段4：验证器扩展（AWS STS GetCallerIdentity 优先；实现前逐个审查最小认证合规）。
+1. **受控"泄露→发现时延"实验**（评价维度5）：需用户给 Token 追加该仓库 Contents:write
+   （步骤在 DELIVERABLES.md §三）；完成后自动回填 P50/P95。
+2. 阶段3：容器镜像（Docker Hub 匿名流程已调研打通）→ tar 层解析/whiteout → APK（Androguard）。
+3. 阶段4：验证器扩展（AWS STS GetCallerIdentity 等，逐个最小认证审查）。
+4. CSDN/掘金合规抓取评估（无官方接口）。
 
 ## 环境事实（勿重复踩坑）
 

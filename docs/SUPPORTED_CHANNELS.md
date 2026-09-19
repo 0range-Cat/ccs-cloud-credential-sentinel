@@ -9,7 +9,7 @@
 
 | 渠道类别 | 具体平台/入口 | 状态 | 增量机制 |
 | --- | --- | --- | --- |
-| 代码托管 | GitHub | offline_tested | 版本缓存（blob sha）；提交历史游标 last_commit_scanned |
+| 代码托管 | **GitHub** | **live_verified**（认证态实采+历史扫描+最小验证 valid/invalid） | 版本缓存（blob sha）；提交历史游标 last_commit_scanned |
 | 代码托管 | **Gitee** | **live_verified** | 版本缓存 |
 | Wiki | **MediaWiki 兼容** | **live_verified** | rccontinue 游标（增量续扫已实测） |
 | 微博 | 微博 | **blocked**（无合规公开接口，不绕过） | — |
@@ -24,7 +24,7 @@
 
 **计入口径的实数**：公开渠道类别 6/7 类有具体实现（微博 blocked 如实标注）；
 具体平台/入口 6 个（GitHub、Gitee、MediaWiki、博客园、Stack Overflow、通用订阅入口），
-其中 4 个 live_verified。上传扫描/本地导入不计入。
+其中 **5 个 live_verified**（GitHub 于 2026-09-19 认证态实采后提升）。上传扫描/本地导入不计入。
 
 ## 明细
 
@@ -51,11 +51,15 @@
 - 入口：API 2.3 search/advanced + questions?filter=withbody；免 key 配额 300/天。
 - 实采证据：关键词检索实采 6 条问题正文；第二轮版本缓存 6/6 跳过；尊重 backoff/quota。
 
-### GitHub（offline_tested，真实验收待用户环境）
+### GitHub（live_verified，2026-09-19 认证态实采）
 - 当前文件树 + 提交历史扫描（新→旧、游标截断、历史层残留语义）。
-- 限制（如实）：本开发网络 api.github.com=403（共享 IP 配额）；Code Search 需认证且
-  10次/分、单查询 1000 条上限；文件级公开时间不可得（历史扫描用提交时间，low 可信）。
-- 真实验收路径：docs/DEMO.md。
+- 实采证据（2026-09-19，认证态）：用户公开仓库实采 12 个当前文件 + 53 条历史提交内容；
+  公共示例仓库实采 1 条；版本缓存与限流语义生效。
+- 验证器实证：用户自有凭据 → **valid（HTTP 200，707ms）**；合成假凭据 → **invalid（401）**。
+  （过程修复：worker.http_factory 返回形状与验证器契约不一致的 TypeError，回归测试锁定。）
+- 剩余待办：受控"泄露→发现时延"实验需该仓库 Contents:write 权限（DELIVERABLES.md §三）。
+- 限制（如实）：文件级公开时间不可得（历史扫描用提交时间，low 可信）；Code Search 需认证
+  且 10次/分、单查询 1000 条上限。
 
 ### 微博（blocked）
 - 调研结论（RESEARCH.md）：无合规公开检索接口；需登录 Cookie；开放平台搜索权限不对普通开发者开放。

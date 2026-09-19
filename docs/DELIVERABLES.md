@@ -1,0 +1,80 @@
+# 交付件与评价维度对照表（DELIVERABLES）
+
+> 用途：赛题交付与答辩时的数字口径单一来源。所有数字均有证据链接，禁止口头夸大。
+> 更新：2026-09-19（GitHub 认证实采 + 四渠道 live 验收完成后）。
+
+## 一、四项交付件
+
+| 交付件 | 位置 | 状态 |
+| --- | --- | --- |
+| 1. 工具源代码 | 本仓库（backend/ + frontend/ + scripts/），Git 全程可追溯 | ✅ |
+| 2. 技术说明书 | [TECHNICAL_MANUAL.md](TECHNICAL_MANUAL.md)：关键技术原理（检测引擎多信号组合、指纹/位置分离建模、时间模型、游标增量、最小验证语义）+ 模块职责表 + 代码实现说明 + 扩展指南 | ✅ 随实现更新 |
+| 3. 支持的公开渠道列表 | [SUPPORTED_CHANNELS.md](SUPPORTED_CHANNELS.md)：逐渠道入口/认证/增量/限制/测试方法/状态 | ✅ |
+| 4. 支持的凭据类型列表 | [SUPPORTED_CREDENTIALS.md](SUPPORTED_CREDENTIALS.md)：35 规则/35 类型逐条列出 | ✅ |
+
+## 二、评价维度 → 当前真实数字
+
+### 评价 1：支持公开渠道类型数量、总数量
+
+| 口径 | 数字 | 证据 |
+| --- | --- | --- |
+| 渠道类别（赛题 7 类） | **7/7 全部有明确结论**：6 类有实现，1 类（微博）无合规公开接口 → blocked 如实标注 | SUPPORTED_CHANNELS.md |
+| 具体平台/入口（在线渠道） | **6 个**：GitHub、Gitee、MediaWiki（兼容任意 MediaWiki 站点）、博客园、Stack Overflow、通用 RSS/Atom/Sitemap/URL（后者可覆盖任意提供订阅源/站点地图的站点） | 同上 |
+| 其中真实接入验证（live_verified） | **5 个**：Gitee、中文维基百科、博客园、Stack Overflow、GitHub（认证态实采） | EVALUATION.md §4 |
+| 导入分析能力（不计入渠道数） | 2 个：本地目录、压缩包（zip/tar，防穿越/防炸弹） | 同上 |
+| 代码托管附加能力 | GitHub 提交历史扫描（历史层残留泄露语义），live 实采 53 条提交内容 | EVALUATION.md §4.3 |
+
+> 口径提醒：类别数与平台数分开报告；blocked 与 planned 分开；自动监控与导入分开。
+
+### 评价 2：支持检索凭据类型数量
+
+| 口径 | 数字 | 证据 |
+| --- | --- | --- |
+| 可检测凭据类型（真实规则+正反样例） | **35 类**（云厂商 9、代码与制品平台 7、AI/邮件/短信/OAuth 9、私钥/数据库/配置载体 10） | SUPPORTED_CREDENTIALS.md；tests/test_rules_registry.py 自检通过 |
+| 可最小在线验证的类型 | **1 类**（GitHub PAT，GET /user）——真实验证 valid/invalid 已实证；阶段4 按最小认证原则逐个扩展（AWS/GitLab/Gitee/Slack 等已列入计划） | EVALUATION.md §4.3 |
+| 检测能力 ≠ 验证能力 | 两者分开报告；无验证器的类型保留检测能力 | SUPPORTED_CREDENTIALS.md 口径说明 |
+
+### 评价 3：平台可扩展性、新监控渠道的易扩展性
+
+- 三条插件契约：Collector（采集）/ Rule（YAML 规则）/ Verifier（最小验证），见 INTERFACES.md §4。
+- **新增一个渠道 = 实现一个 Python 类**（key/category/platform/items/test_connection + 注册装饰器），
+  预算、限流、游标、去重、入库、界面展示全部由框架承担。
+- **实证**：阶段2 在一个工作日内新增 4 个采集器（Gitee/MediaWiki/通用RSS·Sitemap·URL/StackOverflow）
+  + 2 项能力（游标基础设施、GitHub 历史扫描），每个采集器 150~230 行 + mock 测试，
+  均通过同一套流水线测试与 live 验收（git 提交 e81dd9e、1bc1b1d 可追溯）。
+- 新增一条凭据规则 = 追加一个 YAML 条目（含正反样例），注册表自检即回归。
+
+### 评价 4：发现凭据的数量
+
+| 场景 | 数字 | 说明 |
+| --- | --- | --- |
+| 离线标注样例 | 16 凭据 / 17 位置（合成样例仓库） | 全部正确检出、脱敏、多位置关联（tests + 真实服务冒烟） |
+| 真实渠道：用户站点仓库（0range-Cat.github.io，12 文件 + 53 条历史内容） | **0** | 真实空结果：你的站点没有泄露凭据——如实报告，不冒充发现 |
+| 真实渠道：Gitee/维基百科/博客园/SO 抽样 | **0** | 抽样内容为文档/百科/问答，未检出（口径诚实） |
+| 受控泄露实验（GitHub 演示目录） | 待执行 | 需 Token 获得该仓库 Contents:write（配置需求已记录，见 §三） |
+
+### 评价 5：发现时间与凭据公开泄露时间的差值
+
+| 内容 | 状态 |
+| --- | --- |
+| 时间模型基础 | 七类时间字段分离；来源公开时间必须带证据与可信度；未知显示"未知"；MediaWiki 修订时间戳=medium 可信公开时间（可直接参与时延统计） |
+| 受控实验（泄露→发现 P50/P95） | **待执行**：需向演示仓库写入合成凭据的权限。实验设计已定：提交时刻 T0（内容公开）→ 轮询检测到 T1，多轮采样报 P50/P95 与样本数，平台索引延迟=0（直接读仓库树，无搜索索引依赖） |
+| 已验证的增量基础 | 轮询+版本缓存+游标+条件请求全部 live 验证（304/游标推进/缓存跳过），分钟级发现的机制已就绪，只差受控样本 |
+
+## 三、待用户配置需求（唯一阻塞项）
+
+1. **GitHub Token 追加 Contents:write**（用于受控泄露→发现时延实验）：
+   GitHub → Settings → Developer settings → Fine-grained tokens → 编辑该 Token：
+   - Repository access：包含 `0range-Cat/0range-Cat.github.io`（已包含）
+   - Permissions → Repository permissions → **Contents: Read and write**
+   保存后告诉我即可，我自动完成：推送合成样例 → 实采发现 → 三轮时延采样 → 回填报告。
+   （或你手动把 `examples/demo_repo/` 内容复制到该仓库 `ccs-demo-lab/` 目录亦可。）
+2. 实验完成后建议：**吊销/轮换该 Token**（它曾出现在聊天记录中）；清理 `ccs-demo-lab/` 目录。
+3. 可选：Gitee Token（稳定采集）；自有可吊销测试凭据（验证 valid 演示已用当前 Token 完成）。
+
+## 四、安全与合规声明（答辩口径）
+
+- 验证模块默认关闭；仅实现最小认证验证（GitHub GET /user），不读业务数据、不枚举资源。
+- 微博无合规公开接口 → blocked，不做绕过；小程序无合法公开获取途径 → 仅上传分析。
+- 凭据原文 Fernet 加密存储；界面默认脱敏；reveal 留审计；Token 与发现凭据分开管理。
+- 用户真实 Token 仅存于本地加密库（data/ 已 gitignore），未写入任何文档/代码/Git。

@@ -45,9 +45,11 @@ def sync_rule_records(session: Session, registry) -> None:
 
 CHANNEL_CAPABILITIES = [
     # (kind, key, title, status, meta)
-    ("channel", "code_hosting.github", "GitHub 仓库", "offline_tested",
+    ("channel", "code_hosting.github", "GitHub 仓库", "live_verified",
      {"entry": "REST trees+blobs+commits", "limits": "匿名60次/时, 认证5000次/时; 树可能 truncated",
-      "history": "提交历史扫描已实现，游标增量（提交时间为低可信公开时间）"}),
+      "history": "提交历史扫描已实现，游标增量（提交时间为低可信公开时间）",
+      "live": "2026-09-19 认证态实采用户公开仓库（12文件+53条历史内容）并验证版本缓存",
+      "verify_live": "最小验证器实测 valid(200)/invalid(401)"}),
     ("channel", "code_hosting.gitee", "Gitee 仓库", "live_verified",
      {"entry": "API v5 trees+blobs", "live": "2026-09-19 实采 openharmony/docs 内容入库并验证版本缓存增量",
       "limits": "匿名限流不稳定（共享IP），生产建议配置 Token；限流优雅停止已验证"}),
