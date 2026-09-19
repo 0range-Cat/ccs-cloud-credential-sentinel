@@ -1,0 +1,29 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# ===== Node / 前端 =====
+node_modules/
+frontend/dist/
+
+# ===== 运行时数据与敏感文件（严禁提交） =====
+data/
+logs/
+*.log
+*.db
+*.sqlite3
+.env
+.env.*
+!.env.example
+
+# ===== 操作系统 =====
+.DS_Store
+Thumbs.db
+desktop.ini
