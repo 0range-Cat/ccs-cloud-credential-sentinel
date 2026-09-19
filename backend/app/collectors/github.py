@@ -15,7 +15,7 @@ from datetime import datetime
 
 import httpx
 
-from .base import BaseCollector, ContentItem, CollectorError, register
+from .base import USER_AGENT, BaseCollector, ContentItem, CollectorError, register
 
 DEFAULT_API_BASE = "https://api.github.com"
 
@@ -47,7 +47,7 @@ class GitHubCollector(BaseCollector):
     def _make_client(self) -> httpx.AsyncClient:
         headers = {
             "Accept": "application/vnd.github+json",
-            "User-Agent": "ccs-collector",
+            "User-Agent": USER_AGENT,
             "X-GitHub-Api-Version": "2022-11-28",
         }
         if self._token:
@@ -231,7 +231,7 @@ class GitHubCollector(BaseCollector):
         import httpx as _h
 
         repo = self._repo()
-        headers = {"Accept": "application/vnd.github+json", "User-Agent": "ccs-collector"}
+        headers = {"Accept": "application/vnd.github+json", "User-Agent": USER_AGENT}
         if self._token:
             headers["Authorization"] = f"Bearer {self._token}"
         try:

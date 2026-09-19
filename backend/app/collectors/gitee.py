@@ -11,7 +11,7 @@ import time
 
 import httpx
 
-from .base import BaseCollector, ContentItem, CollectorError, register
+from .base import USER_AGENT, BaseCollector, ContentItem, CollectorError, register
 
 DEFAULT_API_BASE = "https://gitee.com/api/v5"
 
@@ -40,7 +40,7 @@ class GiteeCollector(BaseCollector):
         self.auth_error: str | None = None
 
     def _make_client(self) -> httpx.AsyncClient:
-        headers = {"User-Agent": "ccs-collector"}
+        headers = {"User-Agent": USER_AGENT}
         if self._token:
             headers["Authorization"] = f"Bearer {self._token}"
         if self._client_factory is not None:
@@ -133,7 +133,7 @@ class GiteeCollector(BaseCollector):
         import httpx as _h
 
         repo = self._repo()
-        headers = {"User-Agent": "ccs-collector"}
+        headers = {"User-Agent": USER_AGENT}
         if self._token:
             headers["Authorization"] = f"Bearer {self._token}"
         try:

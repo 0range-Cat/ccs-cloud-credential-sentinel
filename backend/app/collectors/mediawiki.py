@@ -13,7 +13,7 @@ from urllib.parse import quote, urlparse
 
 import httpx
 
-from .base import BaseCollector, ContentItem, CollectorError, register
+from .base import USER_AGENT, BaseCollector, ContentItem, CollectorError, register
 
 
 def _parse_ts(value: str | None) -> datetime | None:
@@ -100,14 +100,17 @@ class MediaWikiCollector(BaseCollector):
                     if self.auth_error:
                         raise CollectorError(self.auth_error)
                     continue
-                by_revid: dict[int, dict] = {}
+                by_pageid: dict[int, dict] = {}
                 for page in data.get("query", {}).get("pages", []):
                     rev = (page.get("revisions") or [{}])[0]
-                    by_revid[rev.get("revid")] = {"content": rev.get("content") or "",
-                                                  "timestamp": rev.get("timestamp"),
-                                                  "title": page.get("title")}
+                    # formatversion=2 下修订对象不含 revid 字段，改按 pageid 映射
+                    by_pageid[page.get("pageid")] = {
+                        "content": rev.get("content") or "",
+                        "timestamp": rev.get("timestamp"),
+                        "title": page.get("title"),
+                    }
                 for ch in batch:
-                    rev = by_revid.get(ch["revid"])
+                    rev = by_pageid.get(ch["pageid"])
                     if not rev or not rev["content"]:
                         continue
                     ts = _parse_ts(rev.get("timestamp") or ch.get("timestamp"))
@@ -129,7 +132,7 @@ class MediaWikiCollector(BaseCollector):
         return False
 
     def _client(self) -> httpx.AsyncClient:
-        headers = {"User-Agent": "ccs-collector (mediawiki incremental monitor)"}
+        headers = {"User-Agent": USER_AGENT}
         if self._client_factory is not None:
             return self._client_factory(headers)
         return httpx.AsyncClient(headers=headers, timeout=25, follow_redirects=False)

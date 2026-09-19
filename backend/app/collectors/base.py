@@ -28,6 +28,9 @@ class ContentItem:
     extra: dict = field(default_factory=dict)
 
 
+USER_AGENT = "ccs-collector/0.1 (https://localhost; contact: admin@example.com)"
+
+
 class CollectorError(RuntimeError):
     """致命错误（如仓库不存在）。限流不是 CollectorError，属于正常停止语义。"""
 

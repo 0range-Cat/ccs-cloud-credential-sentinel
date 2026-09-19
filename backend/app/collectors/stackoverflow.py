@@ -11,7 +11,7 @@ from datetime import datetime
 
 import httpx
 
-from .base import BaseCollector, ContentItem, CollectorError, register
+from .base import USER_AGENT, BaseCollector, ContentItem, CollectorError, register
 from .generic_web import html_to_text
 
 DEFAULT_SITE = "stackoverflow"
@@ -38,7 +38,7 @@ class StackOverflowCollector(BaseCollector):
         self._client_factory = client_factory
 
     def _client(self) -> httpx.AsyncClient:
-        headers = {"User-Agent": "ccs-collector"}
+        headers = {"User-Agent": USER_AGENT}
         if self._client_factory is not None:
             return self._client_factory(headers)
         return httpx.AsyncClient(headers=headers, timeout=25, follow_redirects=False)

@@ -10,7 +10,8 @@
           </el-form-item>
           <el-form-item label="Gitee Token">
             <el-input v-model="form['platform.gitee.token']" type="password" show-password
-                      placeholder="阶段2 启用；加密存储" disabled />
+                      placeholder="可选；加密存储。匿名也可访问公开仓库" />
+            <div class="tip">用于 Gitee 采集与连接测试；与扫描发现的凭据分开管理。</div>
           </el-form-item>
         </el-form>
       </el-card>

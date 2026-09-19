@@ -210,6 +210,12 @@ def _execute(session: Session, collector: BaseCollector, source: Source,
                 stats["rate_limited"] = True
                 stats["stop_reason"] = "rate_limited"
                 break
+        # 采集器未产出即停止（如限流发生在最后一条之后）也要如实记录
+        if collector.rate_limited:
+            stats["rate_limited"] = True
+            stats.setdefault("stop_reason", "completed")
+            if stats["stop_reason"] == "completed":
+                stats["stop_reason"] = "rate_limited"
 
     _run_async(_run())
 

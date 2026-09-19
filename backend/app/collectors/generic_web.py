@@ -16,7 +16,7 @@ from urllib.parse import urlparse
 
 import httpx
 
-from .base import BaseCollector, ContentItem, CollectorError, register
+from .base import USER_AGENT, BaseCollector, ContentItem, CollectorError, register
 
 _SCRIPT_RE = re.compile(r"<(script|style)[\s\S]*?</\1>", re.I)
 _TAG_RE = re.compile(r"<[^>]+>")
@@ -56,7 +56,7 @@ class GenericWebCollector(BaseCollector):
         self._client_factory = client_factory
 
     def _client(self) -> httpx.AsyncClient:
-        headers = {"User-Agent": "ccs-collector (feed/sitemap monitor)"}
+        headers = {"User-Agent": USER_AGENT}
         if self._client_factory is not None:
             return self._client_factory(headers)
         return httpx.AsyncClient(headers=headers, timeout=25, follow_redirects=True)
@@ -216,7 +216,7 @@ class GenericWebCollector(BaseCollector):
             return {"ok": False, "message": "未配置 feed_url / sitemap_url / url"}
         try:
             resp = _h.get(url, timeout=15, follow_redirects=True,
-                          headers={"User-Agent": "ccs-collector"})
+                          headers={"User-Agent": USER_AGENT})
         except _h.HTTPError as exc:
             return {"ok": False, "message": f"网络错误: {exc}"}
         if resp.status_code == 200:

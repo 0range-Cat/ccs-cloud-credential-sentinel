@@ -9,8 +9,8 @@
           <el-table-column prop="title" label="名称" min-width="140" />
           <el-table-column label="状态" width="130">
             <template #default="{ row }">
-              <el-tag size="small" :type="({ offline_tested: 'success', implemented: 'primary', planned: 'info', live_verified: 'success' } as any)[row.status]">
-                {{ row.status }}
+              <el-tag size="small" :type="({ offline_tested: 'success', implemented: 'primary', planned: 'info', live_verified: 'success', blocked: 'danger' } as any)[row.status]">
+                {{ ({ blocked: 'blocked（外部受限）' } as any)[row.status] || row.status }}
               </el-tag>
             </template>
           </el-table-column>
