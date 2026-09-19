@@ -25,8 +25,9 @@ cd backend
 python -m venv .venv
 # Windows: .venv\Scripts\activate    Linux: source .venv/bin/activate
 pip install -r requirements.txt
-copy ..\backend\.env.example .env      # 可选，默认零配置可跑
-alembic upgrade head
+copy .env.example .env                 # Windows（可选，默认零配置可跑）
+# cp .env.example .env                 # Linux/macOS
+alembic upgrade head                   # 也可跳过：应用启动时自动执行迁移
 uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 

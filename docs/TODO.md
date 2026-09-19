@@ -8,8 +8,8 @@
 | ID | 任务 | 状态 | 依赖 | 验收 |
 | --- | --- | --- | --- | --- |
 | T0.1 | 环境检查（目录/Git/Python3.13/Node24/Docker/网络） | done | - | DEVLOG 2026-09-19 |
-| T0.2a | 开源工具调研（Gitleaks/TruffleHog/detect-secrets/APK/镜像解析） | doing | - | docs/RESEARCH.md 含链接+日期+许可证 |
-| T0.2b | 平台接口调研（GitHub/Gitee/Wiki/微博/知识分享/镜像/小程序） | doing | - | 同上 |
+| T0.2a | 开源工具调研（Gitleaks/TruffleHog/detect-secrets/APK/镜像解析） | done | - | docs/RESEARCH.md + research/draft-tools.md |
+| T0.2b | 平台接口调研（GitHub/Gitee/Wiki/微博/知识分享/镜像/小程序） | done | - | docs/RESEARCH.md + research/draft-platforms.md（含实测数据） |
 | T0.3 | 文档体系与 Git 规范（README/AGENTS/docs 全套/.gitignore） | done | T0.1 | 提交记录 |
 | T0.4 | 数据模型/插件契约/状态模型/能力矩阵定义 | done | T0.3 | INTERFACES.md |
 
@@ -17,16 +17,16 @@
 
 | ID | 任务 | 状态 | 依赖 | 验收 |
 | --- | --- | --- | --- | --- |
-| T1.1 | 后端骨架：配置/DB(WAL)/加密/指纹/脱敏/设置服务 | todo | T0.4 | pytest security 测试过 |
-| T1.2 | 检测引擎 + 首批规则（含正反样例与占位符过滤） | todo | T1.1 | test_rules/test_engine 过 |
-| T1.3 | 采集器：本地目录 / 压缩包导入 / GitHub 仓库 | todo | T1.1 | mock 平台响应测试过 |
-| T1.4 | 流水线：入库/去重/多位置/时间字段/忽略规则 | todo | T1.2,T1.3 | test_dedup 过 |
-| T1.5 | 调度：APScheduler tick + DB 声明 + 重启恢复 | todo | T1.4 | test_scheduler 过 |
-| T1.6 | 验证框架 + GitHub 最小验证器（默认关闭） | todo | T1.4 | test_verification 过 |
-| T1.7 | REST API + 脱敏/导出 CSV(JSON)/审计 | todo | T1.4-T1.6 | API 测试过 |
-| T1.8 | Vue3 中文界面（总览/任务/发现/验证/渠道规则/设置） | todo | T1.7 | npm build 成功 + 手动走查 |
-| T1.9 | 测试套件整备 + EVALUATION 回填 | todo | T1.7 | 全量 pytest 证据 |
-| T1.10 | GitHub 演示路径（合成样例 + DEMO.md） | todo | T1.8 | 用户按 DEMO 执行（真实接入验收待用户） |
+| T1.1 | 后端骨架：配置/DB(WAL)/加密/指纹/脱敏/设置服务 | done | T0.4 | 38 项 pytest 全过（test_security 等） |
+| T1.2 | 检测引擎 + 首批规则（35 条，含正反样例与占位符过滤） | done | T1.1 | test_rules/test_engine 过；注册表自检通过 |
+| T1.3 | 采集器：本地目录 / 压缩包导入 / GitHub 仓库 | done | T1.1 | test_collectors 过（GitHub 平台响应样例注入） |
+| T1.4 | 流水线：入库/去重/多位置/时间字段/忽略规则 | done | T1.2,T1.3 | test_pipeline_dedup 过 |
+| T1.5 | 调度：APScheduler tick + DB 声明 + 重启恢复 | done | T1.4 | test_pipeline_dedup（恢复/防重叠）过 |
+| T1.6 | 验证框架 + GitHub 最小验证器（默认关闭） | done | T1.4 | test_verification 过（11 态语义/历史追加/零自动验证） |
+| T1.7 | REST API + 脱敏/导出 CSV(JSON)/审计 | done | T1.4-T1.6 | test_api_e2e 过；真实服务冒烟通过 |
+| T1.8 | Vue3 中文界面（总览/任务/发现/验证/渠道规则/设置） | done | T1.7 | npm build 成功；后端托管实测打开 |
+| T1.9 | 测试套件整备 + EVALUATION 回填 | done | T1.7 | 38 passed（2026-09-19 实测） |
+| T1.10 | GitHub 演示路径（合成样例 + DEMO.md） | done | T1.8 | 路径就绪；真实接入验收待用户在其网络执行 |
 
 ## 阶段 2：持续发现与网页类渠道
 

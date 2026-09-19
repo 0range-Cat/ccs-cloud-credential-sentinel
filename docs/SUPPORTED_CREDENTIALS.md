@@ -1,38 +1,78 @@
 # 凭据类型能力矩阵（SUPPORTED_CREDENTIALS）
 
-> 口径：本矩阵只列**有真实规则**的类型；内置规则总数不等于此处数量（别名/变体合并计）。
-> 检测状态：planned / implemented / offline_tested（有正反样例测试）。
-> 最小在线验证：supported（有合规最小验证器）/ offline_tested / unsupported（无合规验证办法，保留检测）/
-> planned（阶段4）。检测状态与验证状态分开报告。
+> 更新：2026-09-19 阶段1完成。
+> 口径：本矩阵只列**有真实规则**的类型（35 条规则 / 35 个类型，别名与变体已合并）；
+> 规则文件：`backend/app/detection/rules/`（cloud / devplatform / services / keys_db 四组）。
+> 检测状态：**offline_tested** = 有正反样例测试且注册表自检通过（tests/test_rules_registry.py）。
+> 最小在线验证与检测状态分开报告；无验证器 ≠ 检测能力缺失。
+> "验证器 planned" 指阶段4 按最小认证原则逐个接入（见 TODO T4.2）。
 
-| 凭据类型 | 厂商 | 规则 ID | 检测状态 | 最小在线验证 | 说明 |
-| --- | --- | --- | --- | --- | --- |
-| AWS Access Key ID | AWS | aws-access-key-id | 阶段1 | planned（STS GetCallerIdentity，阶段4） | 前缀 AKIA/ASIA |
-| AWS Secret Access Key | AWS | aws-secret-access-key | 阶段1 | 同上 | 需上下文/配对 |
-| GitHub PAT（经典/细粒度/OAuth/App） | GitHub | github-pat | 阶段1 | supported（GET /user，离线测试） | ghp_/github_pat_/gho_/ghs_ |
-| GitLab PAT | GitLab | gitlab-pat | 阶段1 | planned（GET /api/v4/user） | glpat_ |
-| Gitee 私人令牌 | Gitee | gitee-token | 阶段1 | planned（GET /api/v5/user） | 上下文+32位十六进制 |
-| Slack Token | Slack | slack-token | 阶段1 | planned（auth.test） | xox[baprs]- |
-| OpenAI API Key | OpenAI | openai-api-key | 阶段1 | planned | sk-…T3BlbkFJ 结构或上下文 |
-| Anthropic API Key | Anthropic | anthropic-api-key | 阶段1 | planned | sk-ant- |
-| 私钥块（RSA/EC/OpenSSH/DSA/PGP） | 通用 | private-key-block | 阶段1 | unsupported（不猜测目标） | 标记是否加密 |
-| GCP 服务账号 JSON | Google | gcp-service-account-json | 阶段1 | planned | JSON 语义解析 |
-| Azure 存储账户密钥 | Microsoft | azure-storage-account-key | 阶段1 | planned | 需 azure 上下文 |
-| Azure AD 客户端密钥 | Microsoft | azure-ad-client-secret | 阶段1 | planned | 需 client_secret 上下文 |
-| 阿里云 AccessKey ID | 阿里云 | aliyun-access-key-id | 阶段1 | planned | LTAI 前缀 |
-| 阿里云 AccessKey Secret | 阿里云 | aliyun-access-key-secret | 阶段1 | planned | 需上下文 |
-| 腾讯云 SecretId | 腾讯云 | tencent-secret-id | 阶段1 | planned | AKID 前缀 |
-| 腾讯云 SecretKey | 腾讯云 | tencent-secret-key | 阶段1 | planned | 需上下文 |
-| 数据库连接串（MySQL/PostgreSQL/MongoDB/Redis/SQLServer） | 通用 | db-connection-url | 阶段1 | unsupported（无法保证仅认证） | URL 语义解析+占位符过滤 |
-| SMTP/邮件服务密钥（SendGrid/Mailgun/Resend/SMTP口令） | 多厂商 | email-provider-keys | 阶段1 | planned | 各自模式 |
-| Twilio（SID+AuthToken 配对） | Twilio | twilio-pair | 阶段1 | planned | 配对规则 |
-| OAuth 客户端密钥（含 Google GOCSPX- 等） | 多厂商 | oauth-client-secret | 阶段1 | planned | 需 client_secret 上下文 |
-| 钉钉机器人 Webhook | 钉钉 | dingtalk-webhook | 阶段1 | unsupported（webhook 即可用） | URL 内 access_token |
-| 飞书/企业微信应用密钥 | 飞书/企业微信 | feishu-wecom-secret | 阶段1 | planned | 上下文+32位 |
-| Stripe Live Secret Key | Stripe | stripe-live-key | 阶段1 | planned | sk_live_ |
-| Telegram Bot Token | Telegram | telegram-bot-token | 阶段1 | planned（getMe） | 数字:AA… |
-| npm/PyPI/HuggingFace/Docker Hub Token | 各平台 | package-registry-tokens | 阶段1 | planned | 前缀特征 |
-| .env/配置文件通用 KEY/TOKEN/SECRET/PASSWORD | 通用 | generic-env-assignment | 阶段1 | unsupported（弱特征） | 强上下文+熵+占位符过滤 |
+## 汇总
 
-> 阶段1完成后本表将更新为实际实现状态并附规则文件位置（backend/app/detection/rules/）。
-> 阶段4 扩展：华为云 AK/SK、对象存储签名、更多 AI/短信服务等。
+- 检测：35 条规则 / 35 个类型，全部 offline_tested（正反样例即测试）。
+- 最小在线验证：1 个已实现并离线测试（GitHub PAT），3 个阶段4 优先接入，其余标 unsupported/planned。
+- 每条规则含：稳定 ID、类型、厂商、版本、许可证、正则、上下文要求、占位符过滤、
+  配对规格、基础置信度、正反样例。
+
+## 云厂商（9）
+
+| 类型 | 规则 ID | 检测 | 验证 | 说明 |
+| --- | --- | --- | --- | --- |
+| AWS Access Key ID | aws-access-key-id | offline_tested | planned（STS GetCallerIdentity） | 排除文档示例值 |
+| AWS Secret Access Key | aws-secret-access-key | offline_tested | 同上 | 强上下文+AK 配对加成 |
+| 阿里云 AccessKey ID | aliyun-access-key-id | offline_tested | planned | LTAI 前缀 |
+| 阿里云 AccessKey Secret | aliyun-access-key-secret | offline_tested | planned | 上下文+AK 配对加成 |
+| 腾讯云 SecretId | tencent-secret-id | offline_tested | planned | AKID 前缀 |
+| 腾讯云 SecretKey | tencent-secret-key | offline_tested | planned | 上下文+配对加成 |
+| Azure 存储账户密钥 | azure-storage-account-key | offline_tested | planned | 需 AccountName/域名上下文 |
+| Azure AD 客户端密钥 | azure-ad-client-secret | offline_tested | planned | client_secret 上下文 |
+| GCP 服务账号 JSON | gcp-service-account-json | offline_tested | planned | JSON 结构化解析+配对字段 |
+
+## 代码与制品平台（7）
+
+| 类型 | 规则 ID | 检测 | 验证 | 说明 |
+| --- | --- | --- | --- | --- |
+| GitHub PAT（ghp_/gho_/ghs_/ghu_/ghr_/github_pat_） | github-pat | offline_tested | **offline_tested**（GET /user） | 唯一已实现验证器 |
+| GitLab PAT | gitlab-pat | offline_tested | planned（GET /api/v4/user） | |
+| Gitee 私人令牌 | gitee-token | offline_tested | planned（GET /api/v5/user） | 上下文+32位十六进制 |
+| npm 令牌 | npm-token | offline_tested | planned | |
+| PyPI 令牌 | pypi-token | offline_tested | planned | |
+| Hugging Face 令牌 | huggingface-token | offline_tested | planned | |
+| Docker Hub PAT | dockerhub-token | offline_tested | planned | |
+
+## AI / 邮件 / 短信 / OAuth（9）
+
+| 类型 | 规则 ID | 检测 | 验证 | 说明 |
+| --- | --- | --- | --- | --- |
+| OpenAI API Key | openai-api-key | offline_tested | planned | T3BlbkFJ 结构 / sk-proj- / 上下文 |
+| Anthropic API Key | anthropic-api-key | offline_tested | planned | sk-ant- |
+| SendGrid API Key | sendgrid-api-key | offline_tested | planned | |
+| Mailgun API Key | mailgun-api-key | offline_tested | planned | 需 mailgun 上下文 |
+| Resend API Key | resend-api-key | offline_tested | planned | |
+| Twilio Account SID | twilio-account-sid | offline_tested | planned | 配对加成 |
+| Twilio Auth Token | twilio-auth-token | offline_tested | planned | 上下文+配对加成 |
+| OAuth 客户端密钥（通用） | oauth-client-secret | offline_tested | planned | client_secret 上下文 |
+| Google OAuth 客户端密钥 | google-oauth-client-secret | offline_tested | planned | GOCSPX- |
+
+## 私钥 / 数据库 / 配置载体（10）
+
+| 类型 | 规则 ID | 检测 | 验证 | 说明 |
+| --- | --- | --- | --- | --- |
+| 私钥块（RSA/EC/DSA/OpenSSH/PGP） | private-key-block | offline_tested | **unsupported**（无目标不尝试） | 标记加密状态；OpenSSH 加密状态标 unknown |
+| 数据库连接串（MySQL/PG/MongoDB/Redis/MSSQL） | db-connection-url | offline_tested | **unsupported**（无法保证仅认证） | URL 语义解析+弱口令拒绝 |
+| 配置文件通用密钥赋值 | generic-env-assignment | offline_tested | **unsupported**（弱特征） | KEY/TOKEN/SECRET 后缀+熵过滤 |
+| 配置文件口令（弱特征） | password-with-context | offline_tested | **unsupported** | 低置信度 35，需人工复核 |
+| Slack Token | slack-token | offline_tested | planned（auth.test） | |
+| Telegram Bot Token | telegram-bot-token | offline_tested | planned（getMe） | |
+| Stripe Live Key | stripe-live-key | offline_tested | planned | |
+| Stripe Test Key | stripe-test-key | offline_tested | — | 低置信度 35 |
+| 钉钉机器人 Webhook | dingtalk-webhook | offline_tested | **unsupported**（webhook 即凭据即可用，不做发送验证） | |
+| 飞书/企业微信应用密钥 | feishu-wecom-secret | offline_tested | planned | |
+
+## 统计口径说明
+
+- "检测 offline_tested" 指规则在标注样本集上正例命中、反例不误报（见 EVALUATION.md §2），
+  不等同于在真实平台数据上验证过精确率。
+- 内置规则总数（35）不可宣传为"已验证可发现 35 类真实泄露"——真实渠道验收按渠道×类型
+  在 EVALUATION.md 逐步回填。
+- 验证状态 independent 于复核状态与置信度，三者不互相覆盖。
