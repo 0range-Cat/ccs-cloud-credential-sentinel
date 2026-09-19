@@ -2,7 +2,7 @@
 
 > 每次会话结束前更新。禁止记录真实密钥。
 
-## 当前状态（2026-09-19，会话2结束：阶段2/3/4 主体完成，阶段5 Docker 已实测）
+## 当前状态（2026-09-19，会话2结束：阶段2/3/4 完成，阶段5 仅剩项已全部闭环）
 
 - 分支：main；最近提交见 `git log --oneline`。
 - 阶段0/1 全部 done；阶段2：T2.1/2.2/2.3/2.5(博客园+SO+通用)/2.6/2.7 done，T2.4 微博 blocked。
@@ -24,11 +24,11 @@
 
 1. 阶段4 剩余：各验证器 valid 路径待用户自有凭据回填；OpenAI/Anthropic/Stripe 已如实标
    unsupported（无不枚举资源的合规端点）。
-2. 阶段5 剩余：Ubuntu 原生部署实测（需用户服务器）、PostgreSQL 双库冒烟（需 PG 实例）、
-   Playwright 界面测试（需下载浏览器）、评估报告/技术说明书/演示指南终稿核对。
-3. CSDN/掘金合规抓取评估（无官方接口）。
-4. Androguard 可选安装以解析 APK manifest（当前如实跳过）。
-5. 交付清单核对见 docs/DELIVERABLES.md §五。
+2. 阶段5 剩余：仅 Ubuntu 原生部署实测（可选——Docker 即 Linux 路径已实测覆盖；
+   若用户愿提供服务器/SSH 可补）。PostgreSQL 冒烟与 Playwright 界面测试均已完成。
+3. 可选增强：Androguard 安装解析 APK manifest（当前如实跳过）；CSDN/掘金合规抓取评估。
+4. 交付清单核对（十六节逐项）见 docs/DELIVERABLES.md §五；答辩口径以该文件为准。
+5. 最终测试基线：**71 passed** + UI 自动化 7/7 + PG 冒烟 + Docker 容器验证。
 
 ## 环境事实（勿重复踩坑）
 
