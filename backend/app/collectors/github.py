@@ -11,6 +11,7 @@ from __future__ import annotations
 import asyncio
 import base64
 import time
+from datetime import datetime
 
 import httpx
 
@@ -36,8 +37,8 @@ class GitHubCollector(BaseCollector):
     platform = "github"
     title = "GitHub 仓库扫描"
 
-    def __init__(self, config: dict, client_factory=None, token: str = ""):
-        super().__init__(config)
+    def __init__(self, config: dict, client_factory=None, token: str = "", cursor_store: dict | None = None):
+        super().__init__(config, cursor_store)
         self._client_factory = client_factory
         self._token = token or ""
         self.rate_limited = False
@@ -74,8 +75,10 @@ class GitHubCollector(BaseCollector):
         if status == 404:
             raise CollectorError(f"GitHub 资源不存在（404）: {what}")
 
-    async def _get(self, client: httpx.AsyncClient, url: str):
+    async def _get(self, client: httpx.AsyncClient, url: str, not_found_ok: bool = False):
         resp = await client.get(url)
+        if resp.status_code == 404 and not_found_ok:
+            return None
         self._handle_status(resp.status_code, resp.headers, url)
         if self.rate_limited or self.auth_error:
             return None
@@ -111,7 +114,7 @@ class GitHubCollector(BaseCollector):
                 if now - last < min_interval:
                     await asyncio.sleep(min_interval - (now - last))
                 last = time.monotonic()
-                blob = await self._get(client, f"/repos/{repo}/git/blobs/{entry.get('sha')}")
+                blob = await self._get(client, f"/repos/{repo}/git/blobs/{entry.get('sha')}", not_found_ok=True)
                 if blob is None:
                     if self.auth_error:
                         raise CollectorError(self.auth_error)
@@ -144,6 +147,85 @@ class GitHubCollector(BaseCollector):
                 )
                 if self.rate_limited:
                     return
+            if self.config.get("fetch_history") and not self.rate_limited:
+                async for item in self._history(client, repo, max_bytes, min_interval):
+                    yield item
+
+    async def _history(self, client, repo: str, max_bytes: int, min_interval: float):
+        """提交历史扫描：新提交优先，游标 last_commit_scanned 之前的不重复扫。
+
+        提交时间作为内容公开时间的低可信依据（published_confidence=low，
+        不参与分钟级时延统计），commit sha / 日期单独存 extra。
+        """
+        per_page = max(1, min(50, int(self.config.get("history_max_commits") or 20)))
+        last_scanned = self.cursors.get("last_commit_scanned")
+        last = 0.0
+        page = 1
+        newest = None
+        while True:
+            commits = await self._get(client, f"/repos/{repo}/commits?per_page={per_page}&page={page}")
+            if commits is None or self.rate_limited or self.auth_error:
+                return
+            if not isinstance(commits, list) or not commits:
+                return
+            if newest is None:
+                newest = commits[0].get("sha")
+                if newest and newest != last_scanned:
+                    self.save_cursor("last_commit_scanned", newest)
+            for c in commits:
+                sha = c.get("sha")
+                if last_scanned and sha == last_scanned:
+                    return
+                detail = await self._get(client, f"/repos/{repo}/commits/{sha}")
+                if detail is None:
+                    if self.rate_limited:
+                        return
+                    continue
+                commit_info = detail.get("commit", {})
+                commit_date = (commit_info.get("committer") or {}).get("date")
+                message = (commit_info.get("message") or "").split("\n")[0][:100]
+                try:
+                    published = datetime.fromisoformat(commit_date.replace("Z", "+00:00")).replace(tzinfo=None) if commit_date else None
+                except ValueError:
+                    published = None
+                for f in detail.get("files", []):
+                    if f.get("status") not in ("added", "modified", "changed"):
+                        continue
+                    path, blob_sha = f.get("filename"), f.get("sha")
+                    if not path or not blob_sha or not self._path_allowed(path):
+                        continue
+                    now = time.monotonic()
+                    if now - last < min_interval:
+                        await asyncio.sleep(min_interval - (now - last))
+                    last = time.monotonic()
+                    blob = await self._get(client, f"/repos/{repo}/git/blobs/{blob_sha}", not_found_ok=True)
+                    if blob is None or blob.get("encoding") != "base64":
+                        if self.rate_limited:
+                            return
+                        continue
+                    try:
+                        data = base64.b64decode(blob.get("content") or "")
+                    except Exception:
+                        continue
+                    if len(data) > max_bytes:
+                        continue
+                    text = self.decode_text(data)
+                    if text is None:
+                        continue
+                    yield ContentItem(
+                        kind="commit_blob", platform=self.platform,
+                        origin_url=f"https://github.com/{repo}/blob/{sha}/{path}",
+                        repo=repo, path=path,
+                        version_id=str(blob_sha), version_kind="commit",
+                        text=text, size=len(data),
+                        published_at=published, published_source="git_commit_date",
+                        published_confidence="low",
+                        extra={"commit_sha": sha, "commit_date": commit_date,
+                               "commit_message": message, "change_type": f.get("status")},
+                    )
+            if len(commits) < per_page:
+                return
+            page += 1
 
     def test_connection(self) -> dict:
         import httpx as _h

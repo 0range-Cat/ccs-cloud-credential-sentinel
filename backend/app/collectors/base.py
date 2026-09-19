@@ -40,8 +40,13 @@ class BaseCollector:
     version: str = "1.0.0"
     rate_limited: bool = False  # 采集器在触发平台限流时置 True，流水线据此优雅停止
 
-    def __init__(self, config: dict):
+    def __init__(self, config: dict, cursor_store: dict | None = None):
         self.config = config or {}
+        # 游标由流水线注入的 dict 承载，运行结束由流水线统一持久化
+        self.cursors: dict = cursor_store if cursor_store is not None else {}
+
+    def save_cursor(self, key: str, value) -> None:
+        self.cursors[key] = str(value)
 
     async def items(self) -> AsyncIterator[ContentItem]:
         raise NotImplementedError
@@ -97,4 +102,4 @@ def all_collectors() -> dict[str, type[BaseCollector]]:
 
 
 # 导入触发注册
-from . import local_dir, archive, github  # noqa: E402,F401
+from . import local_dir, archive, github, gitee, mediawiki, generic_web, stackoverflow  # noqa: E402,F401

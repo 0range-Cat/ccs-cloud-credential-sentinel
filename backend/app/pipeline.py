@@ -49,14 +49,23 @@ def _merge_config(session: Session, source: Source) -> dict:
     return cfg
 
 
-def _build_collector(session: Session, source: Source, config: dict) -> BaseCollector:
+def _build_collector(session: Session, source: Source, config: dict, cursor_store: dict) -> BaseCollector:
+    from .models import Cursor
     cls = get_collector_class(source.collector_key)
     if cls is None:
         raise CollectorError(f"未注册的采集器: {source.collector_key}")
-    kwargs: dict = {}
+    kwargs: dict = {"cursor_store": cursor_store}
     if source.collector_key == "github":
         kwargs["token"] = settings_service.get_setting(session, "platform.github.token") or ""
-    return cls(config, **kwargs)
+    elif source.collector_key == "gitee":
+        kwargs["token"] = settings_service.get_setting(session, "platform.gitee.token") or ""
+    collector = cls(config, **kwargs)
+    # 预载该任务已有游标（增量续扫）
+    task = session.query(Task).filter(Task.source_id == source.id).first()
+    if task:
+        for row in session.query(Cursor).filter(Cursor.task_id == task.id).all():
+            collector.cursors.setdefault(row.cursor_key, row.cursor_value)
+    return collector
 
 
 def run_task(task_id: int, trigger: str = "manual") -> dict:
@@ -86,8 +95,9 @@ def run_task(task_id: int, trigger: str = "manual") -> dict:
         session.commit()
 
         config = _merge_config(session, source)
+        collector = None
         try:
-            collector = _build_collector(session, source, config)
+            collector = _build_collector(session, source, config, {})
             _execute(session, collector, source, run, config, stats)
         except CollectorError as exc:
             stats["stop_reason"] = "collector_error"
@@ -112,9 +122,24 @@ def run_task(task_id: int, trigger: str = "manual") -> dict:
             interval = max(30, int(task.interval_sec or 300))
             task.next_run_at = utcnow() + timedelta(seconds=interval * random.uniform(0.9, 1.1))
         session.commit()
+        # 持久化采集器写回的游标（增量续扫），失败也不丢
+        if collector is not None and collector.cursors:
+            _persist_cursors(session, task.id, collector.cursors)
         return stats
     finally:
         session.close()
+
+
+def _persist_cursors(session: Session, task_id: int, cursors: dict) -> None:
+    from .models import Cursor
+    for key, value in cursors.items():
+        row = session.query(Cursor).filter_by(task_id=task_id, cursor_key=key).first()
+        if row is None:
+            session.add(Cursor(task_id=task_id, cursor_key=key, cursor_value=str(value)))
+        else:
+            row.cursor_value = str(value)
+            row.updated_at = utcnow()
+    session.commit()
 
 
 def _execute(session: Session, collector: BaseCollector, source: Source,

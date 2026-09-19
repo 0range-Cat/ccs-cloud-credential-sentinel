@@ -46,15 +46,23 @@ def sync_rule_records(session: Session, registry) -> None:
 CHANNEL_CAPABILITIES = [
     # (kind, key, title, status, meta)
     ("channel", "code_hosting.github", "GitHub 仓库", "offline_tested",
-     {"entry": "REST trees+blobs", "limits": "匿名60次/时, 认证5000次/时; 树可能 truncated"}),
-    ("channel", "code_hosting.gitee", "Gitee 仓库", "planned", {"phase": 2}),
-    ("channel", "wiki.mediawiki", "MediaWiki 兼容", "planned", {"phase": 2}),
-    ("channel", "microblog.weibo", "微博", "planned", {"phase": 2, "note": "受平台访问控制约束"}),
-    ("channel", "knowledge.csdn", "CSDN", "planned", {"phase": 2}),
-    ("channel", "knowledge.cnblogs", "博客园", "planned", {"phase": 2}),
-    ("channel", "knowledge.juejin", "掘金", "planned", {"phase": 2}),
-    ("channel", "knowledge.stackoverflow", "Stack Overflow", "planned", {"phase": 2}),
-    ("channel", "knowledge.generic", "通用 URL/RSS/Sitemap", "planned", {"phase": 2}),
+     {"entry": "REST trees+blobs+commits", "limits": "匿名60次/时, 认证5000次/时; 树可能 truncated",
+      "history": "提交历史扫描已实现，游标增量（提交时间为低可信公开时间）"}),
+    ("channel", "code_hosting.gitee", "Gitee 仓库", "offline_tested",
+     {"entry": "API v5 trees+blobs", "limits": "匿名可用（2026-09-19 实测）；限速数字待核实"}),
+    ("channel", "wiki.mediawiki", "MediaWiki 兼容", "offline_tested",
+     {"entry": "recentchanges+revisions", "cursor": "rccontinue",
+      "note": "修订时间戳=可信公开时间(medium)"}),
+    ("channel", "microblog.weibo", "微博", "blocked",
+     {"reason": "无合规公开检索接口（需登录态/开放平台权限），不绕过访问控制",
+      "remaining": "保留任务；如用户提供账号配置并在合规边界内评估后再接入"}),
+    ("channel", "knowledge.csdn", "CSDN", "planned", {"phase": 2, "note": "无官方接口，合规抓取单独评估"}),
+    ("channel", "knowledge.cnblogs", "博客园（经通用 RSS）", "offline_tested", {}),
+    ("channel", "knowledge.juejin", "掘金", "planned", {"phase": 2, "note": "无官方接口"}),
+    ("channel", "knowledge.stackoverflow", "Stack Overflow", "offline_tested",
+     {"entry": "API 2.3 search+questions", "limits": "匿名配额300/天"}),
+    ("channel", "knowledge.rss_sitemap_url", "通用 RSS/Atom/Sitemap/URL", "offline_tested",
+     {"cursor": "ETag/Last-Modified", "note": "覆盖任何提供订阅源或站点地图的站点"}),
     ("channel", "container.oci", "OCI/Docker Registry", "planned", {"phase": 3}),
     ("channel", "app.apk", "Android APK", "planned", {"phase": 3}),
     ("channel", "miniprogram.package", "小程序产物", "planned", {"phase": 3}),
@@ -64,6 +72,7 @@ CHANNEL_CAPABILITIES = [
 
 
 def seed_capabilities(session: Session) -> None:
+    """seed 只新增/更新计划行，不覆盖已提升的状态（offline_tested/live_verified 在 DB 中演进）。"""
     for kind, key, title, status, meta in CHANNEL_CAPABILITIES:
         row = session.get(Capability, f"{kind}:{key}")
         if row is None:
