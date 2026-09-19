@@ -76,9 +76,11 @@
 
 | 实验 | 结果 | 证据 |
 | --- | --- | --- |
-| 认证态采集：用户公开仓库（0range-Cat.github.io） | 12 个当前文件入库，0 凭据候选（**真实空结果**——该站点无泄露） | scan_runs stats |
-| 认证态采集：公共示例仓库（octocat/Hello-World） | 1 条入库 | 同上 |
-| 提交历史扫描（fetch_history，游标增量） | **53 条历史提交内容入库**，0 凭据候选（如实的空结果） | 同上 |
+| 认证态采集：用户公开仓库（0range-Cat.github.io） | 12 个站点文件 + **ccs-demo-lab 合成样例**入库 | scan_runs stats |
+| **受控发现实验（评价 4）** | 合成样例推送后 **20 个凭据 / 21 个位置**被检出，覆盖 14 种类型（AWS/阿里云/GitHub/OpenAI/飞书/Twilio 配对/私钥/GCP 服务账号/数据库连接串/配置赋值等），置信度与配对加成符合设计（AWS SK 60→80、Twilio 60→80） | credentials 表（rule_id≠demo） |
+| 重复扫描幂等 | 二次扫描 21 项全部版本缓存跳过，0 新增 | scan_runs stats |
+| 提交历史扫描（fetch_history，游标增量） | **53 条历史提交内容入库** | 同上 |
+| 公共示例仓库（octocat/Hello-World） | 1 条入库 | 同上 |
 | 最小验证：用户自有凭据 | **valid**（GET /user，HTTP 200，707ms） | verification_results |
 | 最小验证：合成假凭据 | **invalid**（HTTP 401，779ms） | 同上 |
 
@@ -88,13 +90,22 @@
 **安全声明**：用户 Token 仅存于本地加密设置库（Fernet，data/ 已 gitignore），
 未写入任何文档、代码、日志或 Git；验证请求仅 GET /user（最小认证），无其他调用。
 
-### 4.3 待执行：受控"泄露→发现时延"实验（评价维度 5 的 P50/P95）
+### 4.3 受控"泄露→发现时延"实验（评价维度 5）——已完成（2026-09-19）
 
-- 需求：Token 对演示仓库的 **Contents:write**（当前为只读）。配置步骤见 DELIVERABLES.md §三。
-- 实验设计（已定）：向 `ccs-demo-lab/` 推送合成凭据文件，记录公开时刻 T0；
-  系统以 10~15 秒间隔轮询，检测到 T1；多轮采样报告 P50/P95 与样本数。
-  平台索引延迟=0（直接读仓库树，不依赖搜索索引）；记录轮询间隔、采集、检测、入库分段。
-- 现状：增量机制（版本缓存/游标/条件请求）已全部 live 验证，受控样本待写入权限。
+- 方法（scripts/latency_experiment.py，可复现）：向用户公开仓库 `ccs-demo-lab/` 推送合成凭据
+  （假值，无法认证），PUT 成功时刻=公开时间 T0（第一手证据）；固定间隔轮询扫描，检出时刻 T1。
+  平台索引延迟=0（直接读仓库树，不依赖搜索索引）。
+- 结果（n=3，轮询间隔 8s）：
+  - **P50 = 25.5 秒，P95 = 26.9 秒**（样本量小，P95 以最大值近似，已在报告中注明）
+  - 时延构成：轮询等待 8s + 采集（树+blob API ~17s，含 2/s 限速与网络 RTT）+ 检测/入库（毫秒级）
+  - 三批全部一次轮询命中（polls=1），无漏检
+- 实测插曲（已写入流程）：GitHub push protection 拦截了格式逼真的合成 Twilio SID
+  （"Secret detected in content"）；使用官方 bypass API
+  （POST /repos/{o}/{r}/secret-scanning/push-protection-bypasses，reason=used_in_tests）后正常推送。
+  这也从侧面验证：GitHub 自家对"真格式"凭据的防护比我们的合成 GitHub PAT 更严格
+  （ghp_ 带校验位校验，随机假值不触发拦截）。
+- 结论：在受控、可持续访问、有可靠公开时间的源上，分钟级（本项目实测秒级）发现目标达成；
+  持续模式 interval_sec 配置会线性叠加到时延（如实说明，不承诺固定值）。
 
 ### 4.4 其他渠道状态
 

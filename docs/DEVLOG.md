@@ -165,3 +165,15 @@
 - 新增 tests/test_artifacts.py（OCI whiteout/最终视图/引用解析 + APK dex/二进制跳过/非zip拒绝）。
 - 旧断言 `github==offline_tested` 更新为 live_verified（状态演进同步测试）。
 - 全量 **58 passed**（2026-09-19）。能力清单：container.oci / app.apk → live_verified。
+
+## 2026-09-19（会话2终：Token 轮换 + 受控时延实验完成）
+
+- 用户吊销旧 Token 并追加 Contents:write 后提供新 Token；落地同前（gitignored 文件 + 加密库）。
+- 写权限探测 201 → 执行 scripts/latency_experiment.py（新建，可复现）。
+- **实验结果：20 凭据 / 21 位置 / 14 类型检出（评价 4）；P50=25.5s / P95=26.9s（n=3，轮询 8s）（评价 5）**。
+- 幂等：二次扫描 21 项全部缓存跳过，0 新增。
+- 实测插曲：GitHub push protection 拦截合成 Twilio SID（"Secret detected"）；
+  按官方 bypass API（reason=used_in_tests）处理后推送成功，流程固化进实验脚本。
+  （ghp_ 假值未触发拦截——GitHub 对自家 PAT 有校验位校验，侧面印证格式逼真度差异。）
+- 脚本开发中修复：409 竞态重试、已存在跳过、时区 aware/naive 对齐、bytes/str 编码。
+- 数据文件：data/latency_log.json（gitignored，含逐批 T0/T1/指纹前缀）。

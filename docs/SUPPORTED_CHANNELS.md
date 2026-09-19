@@ -57,7 +57,11 @@ OCI Registry、APK 下载入口），其中 **7 个 live_verified**；上传扫�
   公共示例仓库实采 1 条；版本缓存与限流语义生效。
 - 验证器实证：用户自有凭据 → **valid（HTTP 200，707ms）**；合成假凭据 → **invalid（401）**。
   （过程修复：worker.http_factory 返回形状与验证器契约不一致的 TypeError，回归测试锁定。）
-- 剩余待办：受控"泄露→发现时延"实验需该仓库 Contents:write 权限（DELIVERABLES.md §三）。
+- **受控"泄露→发现"实验（评价 4/5 主证据）**：合成样例推送到 ccs-demo-lab/ 后
+  **20 凭据 / 21 位置 / 14 类型全部检出**；三批追加内容 **P50=25.5s / P95=26.9s**（n=3，轮询 8s，
+  平台索引延迟=0）。方法与复现：scripts/latency_experiment.py。
+- 实测插曲：GitHub push protection 拦截格式逼真的合成 Twilio SID → 按官方 bypass API
+  （reason=used_in_tests）处理后推送成功（流程已固化进实验脚本）。
 - 限制（如实）：文件级公开时间不可得（历史扫描用提交时间，low 可信）；Code Search 需认证
   且 10次/分、单查询 1000 条上限。
 
