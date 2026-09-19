@@ -8,9 +8,9 @@
 | 交付件 | 位置 | 状态 |
 | --- | --- | --- |
 | 1. 工具源代码 | 本仓库（backend/ + frontend/ + scripts/），Git 全程可追溯 | ✅ |
-| 2. 技术说明书 | [TECHNICAL_MANUAL.md](TECHNICAL_MANUAL.md)：关键技术原理（检测引擎多信号组合、指纹/位置分离建模、时间模型、游标增量、最小验证语义）+ 模块职责表 + 代码实现说明 + 扩展指南 | ✅ 随实现更新 |
-| 3. 支持的公开渠道列表 | [SUPPORTED_CHANNELS.md](SUPPORTED_CHANNELS.md)：逐渠道入口/认证/增量/限制/测试方法/状态 | ✅ |
-| 4. 支持的凭据类型列表 | [SUPPORTED_CREDENTIALS.md](SUPPORTED_CREDENTIALS.md)：35 规则/35 类型逐条列出 | ✅ |
+| 2. 技术说明书 | **[TECHNICAL_MANUAL.md](TECHNICAL_MANUAL.md)**：关键技术原理详细描述（七步检测管线/指纹去重/时间模型/增量机制/调度恢复/最小验证/安全设计）+ 逐模块代码功能实现说明 + 13 表结构 + API 清单 + 测试体系 | ✅ 定稿 |
+| 3. 支持的公开渠道列表 | **[SUPPORT_MATRIX.md](SUPPORT_MATRIX.md) §二**（合并清单，自包含）；明细 [SUPPORTED_CHANNELS.md](SUPPORTED_CHANNELS.md) | ✅ 定稿 |
+| 4. 支持的凭据类型列表 | **[SUPPORT_MATRIX.md](SUPPORT_MATRIX.md) §三**（35 类逐条+验证器关联）；明细 [SUPPORTED_CREDENTIALS.md](SUPPORTED_CREDENTIALS.md) | ✅ 定稿 |
 
 ## 二、评价维度 → 当前真实数字
 
@@ -96,3 +96,9 @@
 
 **整体状态：已实现并验证的部分全部交付；剩余为待用户条件的验收项（Ubuntu/PG/浏览器测试）
 与如实标注的合规受限项（微博/加密小程序包/OpenAI 类验证器）。**
+
+## 六、评价方式第 3 项（可扩展性）的专项文档
+
+**[EXTENSIBILITY.md](EXTENSIBILITY.md)**：三个插件契约（Collector/Rule/Verifier）设计与真实代码示例、
+新增渠道八步清单、数据库与前端零改动说明、**单日新增 6 采集器+2 验证器的实证数据表**、
+扩展过程中框架被持续加固的记录、边界与约束的如实说明。
