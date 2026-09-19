@@ -1,0 +1,4 @@
+# 数据库连接串样例（假值）
+DATABASE_URL=mysql://appuser:S3cretPassX9@db.internal:3306/appdb
+MONGO_URI=mongodb+srv://svcuser:An0therPass77@cluster0.abc12.mongodb.net/db
+SAFE_URL=mysql://appuser@db.internal:3306/appdb
