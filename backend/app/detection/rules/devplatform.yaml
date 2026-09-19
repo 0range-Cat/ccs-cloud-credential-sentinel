@@ -1,0 +1,236 @@
+# 代码与制品平台凭据规则
+- id: github-pat
+  title: GitHub Personal Access Token
+  type: github_pat
+  vendor: github
+  version: 1
+  license: MIT
+  confidence: 90
+  patterns:
+    - 'ghp_[0-9A-Za-z]{36}'
+    - 'gho_[0-9A-Za-z]{36}'
+    - 'ghs_[0-9A-Za-z]{36}'
+    - 'ghu_[0-9A-Za-z]{36}'
+    - 'ghr_[0-9A-Za-z]{36}'
+    - 'github_pat_[0-9A-Za-z_]{60,120}'
+  min_length: 40
+  verifier: github-pat
+  tests:
+    positives:
+      - 'token: ghp_4a9Ck2XwQqLmN8vBzR5tYuIoP1sDfGhJkL2b'
+      - 'GITHUB_TOKEN=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'
+    negatives:
+      - 'token = ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+      - 'github_pat_short'
+
+- id: gitlab-pat
+  title: GitLab Personal Access Token
+  type: gitlab_pat
+  vendor: gitlab
+  version: 1
+  license: MIT
+  confidence: 85
+  patterns:
+    - 'glpat-[0-9A-Za-z_-]{20,}'
+  min_length: 26
+  verifier: gitlab-pat
+  tests:
+    positives:
+      - 'token = glpat-Ab12Cd34Ef56Gh78Ij90'
+    negatives:
+      - 'glpat-XXXX'
+
+- id: gitee-token
+  title: Gitee 私人令牌
+  type: gitee_token
+  vendor: gitee
+  version: 1
+  license: MIT
+  confidence: 70
+  patterns:
+    - '(?<![0-9A-Fa-f])([0-9a-f]{32})(?![0-9A-Fa-f])'
+  secret_group: 1
+  min_length: 32
+  max_length: 32
+  min_entropy: 2.8
+  required_context:
+    - '(?i)gitee'
+    - '(?i)private[_-]?token'
+    - '(?i)access[_-]?token'
+  verifier: gitee-token
+  tests:
+    positives:
+      - 'gitee access token: 8f2c94d1b7e35a06c9f8d2e41b7a9c63'
+    negatives:
+      - 'hash = 8f2c94d1b7e35a06c9f8d2e41b7a9c63'
+
+- id: slack-token
+  title: Slack Token
+  type: slack_token
+  vendor: slack
+  version: 1
+  license: MIT
+  confidence: 90
+  patterns:
+    - 'xox[baprs]-[0-9A-Za-z-]{10,}'
+  min_length: 16
+  verifier: slack-auth-test
+  tests:
+    positives:
+      - 'SLACK_BOT_TOKEN=xoxb-123456789012-AbCdEfGhIjKlMnOp'
+    negatives:
+      - 'xoxb-xxxxxxxxxx-xxxxxxxxxxxxxxxxxxxx'
+
+- id: npm-token
+  title: npm 发布令牌
+  type: npm_token
+  vendor: npm
+  version: 1
+  license: MIT
+  confidence: 85
+  patterns:
+    - 'npm_[A-Za-z0-9]{36}'
+  min_length: 40
+  tests:
+    positives:
+      - '//registry.npmjs.org/:_authToken=npm_4a9Ck2XwQqLmN8vBzR5tYuIoP1sDfGhJkL2b'
+    negatives:
+      - 'npm_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+
+- id: pypi-token
+  title: PyPI API Token
+  type: pypi_token
+  vendor: pypi
+  version: 1
+  license: MIT
+  confidence: 85
+  patterns:
+    - 'pypi-[A-Za-z0-9_-]{60,}'
+  min_length: 65
+  tests:
+    positives:
+      - 'password = pypi-A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8S9t0U1v2W3x4Y5z6A7b8C9d0E1f2G3h4'
+    negatives:
+      - 'password = pypi-short'
+
+- id: huggingface-token
+  title: Hugging Face Token
+  type: huggingface_token
+  vendor: huggingface
+  version: 1
+  license: MIT
+  confidence: 85
+  patterns:
+    - 'hf_[A-Za-z0-9]{34}'
+  min_length: 37
+  tests:
+    positives:
+      - 'HF_TOKEN=hf_4a9Ck2XwQqLmN8vBzR5tYuIoP1sDfGhJkL'
+    negatives:
+      - 'hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+
+- id: dockerhub-token
+  title: Docker Hub Personal Access Token
+  type: dockerhub_token
+  vendor: docker
+  version: 1
+  license: MIT
+  confidence: 85
+  patterns:
+    - 'dckr_pat_[A-Za-z0-9_-]{36}'
+  min_length: 45
+  tests:
+    positives:
+      - 'dckr_pat_4a9Ck2XwQqLmN8vBzR5tYuIoP1sDfGhJkL2b'
+    negatives:
+      - 'dckr_pat_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+
+- id: telegram-bot-token
+  title: Telegram Bot Token
+  type: telegram_bot_token
+  vendor: telegram
+  version: 1
+  license: MIT
+  confidence: 85
+  patterns:
+    - '(?<![0-9])([0-9]{8,10}:AA[A-Za-z0-9_-]{33})(?![A-Za-z0-9_-])'
+  secret_group: 1
+  min_length: 44
+  max_length: 46
+  verifier: telegram-getme
+  tests:
+    positives:
+      - 'bot_token = 6123456789:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsawX'
+    negatives:
+      - '12345:AAHdqTcvCH1vGWJxfSeofSAs0K5PALDsaw'
+
+- id: stripe-live-key
+  title: Stripe Live Secret Key
+  type: stripe_live_key
+  vendor: stripe
+  version: 1
+  license: MIT
+  confidence: 95
+  patterns:
+    - '(?<![A-Za-z0-9])((?:sk|rk)_live_[0-9a-zA-Z]{24,})(?![A-Za-z0-9])'
+  secret_group: 1
+  min_length: 32
+  tests:
+    positives:
+      - 'stripe: sk_live_9a8B7c6D5e4F3g2H1i0J9k8L'
+    negatives:
+      - 'sk_live_SHORT'
+
+- id: stripe-test-key
+  title: Stripe Test Secret Key
+  type: stripe_test_key
+  vendor: stripe
+  version: 1
+  license: MIT
+  confidence: 35
+  patterns:
+    - '(?<![A-Za-z0-9])(sk_test_[0-9a-zA-Z]{24,})(?![A-Za-z0-9])'
+  secret_group: 1
+  min_length: 32
+  tests:
+    positives:
+      - 'stripe_test = sk_test_9a8B7c6D5e4F3g2H1i0J9k8L'
+    negatives:
+      - 'sk_test_SHORT'
+
+- id: dingtalk-webhook
+  title: 钉钉机器人 Webhook
+  type: dingtalk_webhook
+  vendor: dingtalk
+  version: 1
+  license: MIT
+  confidence: 90
+  patterns:
+    - 'oapi\.dingtalk\.com/robot/send\?access_token=([0-9a-f]{64})'
+  secret_group: 1
+  min_length: 64
+  max_length: 64
+  tests:
+    positives:
+      - 'https://oapi.dingtalk.com/robot/send?access_token=8f2c94d1b7e35a06c9f8d2e41b7a9c638f2c94d1b7e35a06c9f8d2e41b7a9c63'
+    negatives:
+      - 'https://oapi.dingtalk.com/robot/send?access_token=short'
+
+- id: feishu-wecom-secret
+  title: 飞书/企业微信应用密钥
+  type: feishu_wecom_secret
+  vendor: bytedance-tencent
+  version: 1
+  license: MIT
+  confidence: 80
+  patterns:
+    - '(?i)(?:app_secret|corpsecret)["'']?[ \t]*[:=][ \t]*["'']?([A-Za-z0-9]{32})["'']?'
+  secret_group: 1
+  min_length: 32
+  max_length: 32
+  tests:
+    positives:
+      - 'app_secret = Kl8mN3oP4qR5sT6uV7wX8yZ9a0B1c2D3'
+      - '"corpsecret": "Kl8mN3oP4qR5sT6uV7wX8yZ9a0B1c2D4"'
+    negatives:
+      - 'app_secret = short'

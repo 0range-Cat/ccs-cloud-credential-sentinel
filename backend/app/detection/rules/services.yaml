@@ -1,0 +1,166 @@
+# AI 服务 / 邮件 / 短信 / OAuth 凭据规则
+- id: openai-api-key
+  title: OpenAI API Key
+  type: openai_api_key
+  vendor: openai
+  version: 1
+  license: MIT
+  confidence: 90
+  patterns:
+    - 'sk-[A-Za-z0-9_-]{20,}T3BlbkFJ[A-Za-z0-9_-]{20,}'
+    - 'sk-proj-[A-Za-z0-9_-]{40,}'
+    - '(?i)openai[_-]?api[_-]?key["'']?\s*[:=]\s*["''](?P<secret>sk-[A-Za-z0-9_-]{16,})["'']'
+  min_length: 30
+  verifier: openai-api-key
+  tests:
+    positives:
+      - 'OPENAI_API_KEY=sk-a1B2c3D4e5F6g7H8i9J0k1T3BlbkFJl2M3n4O5p6Q7r8S9t0U1v2'
+      - 'openai_api_key = sk-proj-a1B2c3D4e5F6g7H8i9J0k1L2m3N4o5P6q7R8s9T0u1'
+    negatives:
+      - 'OPENAI_API_KEY=sk-your-key-here'
+      - 'key = sk-123'
+
+- id: anthropic-api-key
+  title: Anthropic API Key
+  type: anthropic_api_key
+  vendor: anthropic
+  version: 1
+  license: MIT
+  confidence: 90
+  patterns:
+    - 'sk-ant-[A-Za-z0-9_-]{24,}'
+  min_length: 31
+  verifier: anthropic-api-key
+  tests:
+    positives:
+      - 'ANTHROPIC_API_KEY=sk-ant-api03-Ab12Cd34Ef56Gh78Ij90Kl12'
+    negatives:
+      - 'sk-ant-short'
+
+- id: sendgrid-api-key
+  title: SendGrid API Key
+  type: sendgrid_api_key
+  vendor: sendgrid
+  version: 1
+  license: MIT
+  confidence: 90
+  patterns:
+    - 'SG\.[A-Za-z0-9_-]{16,}\.[A-Za-z0-9_-]{16,}'
+  min_length: 40
+  tests:
+    positives:
+      - 'SENDGRID_API_KEY=SG.a1B2c3D4e5F6g7H8i9J0.k1L2m3N4o5P6q7R8s9T0u1V2w3X4y5Z6a7B8c9D0e1'
+    negatives:
+      - 'SG.short.short'
+
+- id: mailgun-api-key
+  title: Mailgun API Key
+  type: mailgun_api_key
+  vendor: mailgun
+  version: 1
+  license: MIT
+  confidence: 80
+  patterns:
+    - '(?<![A-Za-z0-9])(key-[0-9A-Za-z]{32})(?![A-Za-z0-9])'
+  secret_group: 1
+  min_length: 36
+  max_length: 36
+  required_context:
+    - '(?i)mailgun'
+  tests:
+    positives:
+      - 'MAILGUN_API_KEY = key-8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d'
+    negatives:
+      - 'api = key-8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d'
+
+- id: resend-api-key
+  title: Resend API Key
+  type: resend_api_key
+  vendor: resend
+  version: 1
+  license: MIT
+  confidence: 85
+  patterns:
+    - '(?<![A-Za-z0-9])(re_[A-Za-z0-9]{32})(?![A-Za-z0-9])'
+  secret_group: 1
+  min_length: 35
+  max_length: 35
+  tests:
+    positives:
+      - 'RESEND_API_KEY=re_8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d'
+    negatives:
+      - 're_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+
+- id: twilio-account-sid
+  title: Twilio Account SID
+  type: twilio_account_sid
+  vendor: twilio
+  version: 1
+  license: MIT
+  confidence: 55
+  patterns:
+    - '(?<![A-Za-z0-9])(AC[a-f0-9]{32})(?![a-f0-9])'
+  secret_group: 1
+  min_length: 34
+  max_length: 34
+  pairing: { with: twilio-auth-token, max_line_distance: 5, boost: 20 }
+  tests:
+    positives:
+      - 'TWILIO_ACCOUNT_SID = AC0123456789abcdef0123456789abcdef'
+    negatives:
+      - 'id = AC123'
+
+- id: twilio-auth-token
+  title: Twilio Auth Token
+  type: twilio_auth_token
+  vendor: twilio
+  version: 1
+  license: MIT
+  confidence: 60
+  patterns:
+    - '(?<![A-Za-z0-9])([a-f0-9]{32})(?![a-f0-9])'
+  secret_group: 1
+  min_length: 32
+  max_length: 32
+  min_entropy: 2.8
+  required_context:
+    - '(?i)(auth[_-]?token|twilio)'
+  pairing: { with: twilio-account-sid, max_line_distance: 5, boost: 20 }
+  verifier: twilio-pair
+  tests:
+    positives:
+      - 'TwilioAuthToken = 0f9e8d7c6b5a4392817263544a5b6c7d'
+    negatives:
+      - 'md5 = 0f9e8d7c6b5a4392817263544a5b6c7d'
+
+- id: oauth-client-secret
+  title: OAuth 客户端密钥（通用）
+  type: oauth_client_secret
+  vendor: generic
+  version: 1
+  license: MIT
+  confidence: 65
+  patterns:
+    - '(?i)client_secret["'']?[ \t]*[:=][ \t]*["'']?(?P<secret>[A-Za-z0-9_-]{20,})["'']?'
+  min_length: 20
+  tests:
+    positives:
+      - 'client_secret = Ab12Cd34Ef56Gh78Ij90Kl12Mn34'
+    negatives:
+      - 'client_secret = changeme'
+
+- id: google-oauth-client-secret
+  title: Google OAuth 客户端密钥
+  type: google_oauth_client_secret
+  vendor: google
+  version: 1
+  license: MIT
+  confidence: 90
+  patterns:
+    - 'GOCSPX-[A-Za-z0-9_-]{28,}'
+  min_length: 35
+  tests:
+    positives:
+      - 'GOOGLE_CLIENT_SECRET=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'
+    negatives:
+      - 'GOCSPX-short'
