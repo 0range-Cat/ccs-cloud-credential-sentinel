@@ -44,9 +44,9 @@
 
 | ID | 任务 | 状态 | 验收 |
 | --- | --- | --- | --- |
-| T3.1 | 容器镜像：OCI registry manifest/config/layers、digest 去重、历史层与 whiteout、大小限制 | todo | 离线 tar/registry mock 测试 |
-| T3.2 | Android APK：Androguard/zip 解析、manifest/资源/字符串、上传+版本监控 | todo | 样例 APK 测试 |
-| T3.3 | 小程序产物：合法取得的包/解包目录扫描、公开入口监控可行性记录 | todo | 样例产物测试 + 限制记录 |
+| T3.1 | 容器镜像：OCI registry manifest/config/layers、digest 去重、历史层与 whiteout、大小限制 | done（live_verified） | 58 项测试含 whiteout/最终视图断言；alpine:latest 匿名实采 40 条 |
+| T3.2 | Android APK：zip/dex 字符串解析、可选 Androguard manifest、上传+URL 版本监控 | done（live_verified） | mock APK 测试；F-Droid 官方 APK 实采 25 条；二进制 manifest 未装 Androguard 时如实跳过 |
+| T3.3 | 小程序产物：合法取得的包/解包目录扫描、公开入口监控可行性记录 | todo | 样例产物测试 + 限制记录；解包目录可先经本地导入扫描 |
 
 ## 阶段 4：验证与凭据覆盖扩展（可与阶段2/3部分并行）
 

@@ -22,9 +22,9 @@
 | 小程序 | 合法取得的产物 | planned（阶段3） | — |
 | 本地导入 | 本地目录/压缩包 | offline_tested | 内容哈希/成员元数据 |
 
-**计入口径的实数**：公开渠道类别 6/7 类有具体实现（微博 blocked 如实标注）；
-具体平台/入口 6 个（GitHub、Gitee、MediaWiki、博客园、Stack Overflow、通用订阅入口），
-其中 **5 个 live_verified**（GitHub 于 2026-09-19 认证态实采后提升）。上传扫描/本地导入不计入。
+**计入口径的实数**：公开渠道类别 **5/7 有实现**（微博 blocked、小程序 planned，均如实标注）；
+具体平台/入口 **8 个**（GitHub、Gitee、MediaWiki、博客园、Stack Overflow、通用订阅入口、
+OCI Registry、APK 下载入口），其中 **7 个 live_verified**；上传扫描/本地导入不计入。
 
 ## 明细
 
@@ -60,6 +60,23 @@
 - 剩余待办：受控"泄露→发现时延"实验需该仓库 Contents:write 权限（DELIVERABLES.md §三）。
 - 限制（如实）：文件级公开时间不可得（历史扫描用提交时间，low 可信）；Code Search 需认证
   且 10次/分、单查询 1000 条上限。
+
+### 容器镜像（live_verified，2026-09-19）
+- 入口：OCI Distribution API（Docker Hub 匿名 token 流程实测；ghcr/阿里云同协议适配）。
+- 语义：config digest 为镜像版本（重扫自动跳过）；逐层 tar 解析；
+  **whiteout/opaque 处理**区分"当前视图可见"与"历史层残留"（extra.in_final_view 标记）；
+  层被删除不意味着历史凭据不存在——所有层都扫描。
+- 公开时间：镜像配置 created 为构建时间（low 可信），不冒充发布时间。
+- 资源限制：层总量/单成员大小/成员数量/解压总量熔断；符号链接与设备文件跳过。
+- 实测：alpine:latest 匿名拉取 40 条层文件；修复记录：blob 307 到 CDN 需跟随重定向（采集层，
+  验证器仍禁重定向）。
+
+### Android APK（live_verified，2026-09-19）
+- 入口：上传 / 本地路径 / **公开下载 URL 监控**（内容 sha256 为版本，重复下载自动跳过）。
+- 解析：APK=zip；assets/res-raw/META-INF/配置类文本直接扫描；classes*.dex 提取可打印字符串后扫描；
+  二进制 AndroidManifest 需 Androguard（可选依赖，未装时如实跳过不假装扫描）。
+- 安全：纯静态，不执行未知应用；成员数/大小/解压总量限制。
+- 实测：F-Droid 官方 APK（公开下载入口）25 条内容入库（assets + dex 字符串）。
 
 ### 微博（blocked）
 - 调研结论（RESEARCH.md）：无合规公开检索接口；需登录 Cookie；开放平台搜索权限不对普通开发者开放。

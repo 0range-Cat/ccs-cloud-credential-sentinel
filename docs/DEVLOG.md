@@ -139,3 +139,29 @@
 
 - 新增 docs/DELIVERABLES.md：四项交付件 + 五个评价维度 → 真实数字与证据对照（答辩口径）。
 - GitHub 渠道状态 → live_verified；评价 4/5 的受控实验部分标注为待写权限后执行。
+
+## 2026-09-19（会话2续：阶段3 制品渠道）
+
+### 容器镜像（OCI Registry 采集器）— done，live_verified
+
+- 实现：镜像引用解析（docker.io/library 前缀、digest/tag）、匿名 Bearer token 流程、
+  多架构清单选择、config digest 作镜像版本、逐层 gzip tar 解析、
+  whiteout/opaque 语义（最终视图按层序：先应用下层删除，再加本层文件——
+  测试暴露初版顺序错误后修正）、构建时间=low 可信公开时间、总量/成员数/大小熔断。
+- live：alpine:latest 匿名拉取，40 条层文件入库（in_final_view 标记正常）。
+- live 修复：Docker Hub blob 307 重定向到 CDN，采集层需 follow_redirects=True
+  （验证器仍严格禁重定向——两个模块语义不同）。
+
+### Android APK 采集器 — done，live_verified
+
+- 实现：APK=zip；assets/res-raw/META-INF/配置文本扫描；classes*.dex 可打印字符串提取后扫描；
+  Androguard 可选（未安装时二进制 manifest 如实跳过）；上传/本地/公开下载 URL 三种入口；
+  内容 sha256 为版本；PK 头校验（修了一个 `len>4` 笔误）。
+- live：F-Droid 官方 APK 25 条内容入库（assets + dex 字符串）；
+  dex 字符串中的凭据可被引擎检出（测试断言）。
+
+### 测试与提交
+
+- 新增 tests/test_artifacts.py（OCI whiteout/最终视图/引用解析 + APK dex/二进制跳过/非zip拒绝）。
+- 旧断言 `github==offline_tested` 更新为 live_verified（状态演进同步测试）。
+- 全量 **58 passed**（2026-09-19）。能力清单：container.oci / app.apk → live_verified。

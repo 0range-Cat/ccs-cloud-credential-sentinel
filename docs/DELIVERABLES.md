@@ -18,9 +18,9 @@
 
 | 口径 | 数字 | 证据 |
 | --- | --- | --- |
-| 渠道类别（赛题 7 类） | **7/7 全部有明确结论**：6 类有实现，1 类（微博）无合规公开接口 → blocked 如实标注 | SUPPORTED_CHANNELS.md |
-| 具体平台/入口（在线渠道） | **6 个**：GitHub、Gitee、MediaWiki（兼容任意 MediaWiki 站点）、博客园、Stack Overflow、通用 RSS/Atom/Sitemap/URL（后者可覆盖任意提供订阅源/站点地图的站点） | 同上 |
-| 其中真实接入验证（live_verified） | **5 个**：Gitee、中文维基百科、博客园、Stack Overflow、GitHub（认证态实采） | EVALUATION.md §4 |
+| 渠道类别（赛题 7 类） | **7/7 全部有明确结论**：5 类有实现（代码托管/Wiki/知识分享/容器镜像/App），微博 blocked（无合规公开接口）、小程序 planned（wxapkg 专用解析待做），均如实标注 | SUPPORTED_CHANNELS.md |
+| 具体平台/入口（在线与制品渠道） | **8 个**：GitHub（含提交历史）、Gitee、MediaWiki（兼容任意站点）、博客园、Stack Overflow、通用 RSS/Atom/Sitemap/URL、OCI Registry（Docker Hub 实测，兼容 ghcr/阿里云协议）、APK 公开下载入口监控 | 同上 |
+| 其中真实接入验证（live_verified） | **7 个**：GitHub（认证态实采+历史扫描）、Gitee、中文维基百科、博客园、Stack Overflow、OCI Registry（alpine:latest 匿名拉取）、APK（F-Droid 官方包） | EVALUATION.md §4 |
 | 导入分析能力（不计入渠道数） | 2 个：本地目录、压缩包（zip/tar，防穿越/防炸弹） | 同上 |
 | 代码托管附加能力 | GitHub 提交历史扫描（历史层残留泄露语义），live 实采 53 条提交内容 | EVALUATION.md §4.3 |
 
@@ -39,9 +39,9 @@
 - 三条插件契约：Collector（采集）/ Rule（YAML 规则）/ Verifier（最小验证），见 INTERFACES.md §4。
 - **新增一个渠道 = 实现一个 Python 类**（key/category/platform/items/test_connection + 注册装饰器），
   预算、限流、游标、去重、入库、界面展示全部由框架承担。
-- **实证**：阶段2 在一个工作日内新增 4 个采集器（Gitee/MediaWiki/通用RSS·Sitemap·URL/StackOverflow）
-  + 2 项能力（游标基础设施、GitHub 历史扫描），每个采集器 150~230 行 + mock 测试，
-  均通过同一套流水线测试与 live 验收（git 提交 e81dd9e、1bc1b1d 可追溯）。
+- **实证**：本次开发当天新增 6 个采集器（Gitee/MediaWiki/通用RSS·Sitemap·URL/StackOverflow/
+  OCI镜像/APK）+ 2 项能力（游标基础设施、GitHub 历史扫描），每个采集器 150~330 行 + mock 测试，
+  全部通过同一套流水线测试与 live 验收（git 提交 e81dd9e、1bc1b1d 及后续可追溯）。
 - 新增一条凭据规则 = 追加一个 YAML 条目（含正反样例），注册表自检即回归。
 
 ### 评价 4：发现凭据的数量

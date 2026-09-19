@@ -105,4 +105,4 @@ def all_collectors() -> dict[str, type[BaseCollector]]:
 
 
 # 导入触发注册
-from . import local_dir, archive, github, gitee, mediawiki, generic_web, stackoverflow  # noqa: E402,F401
+from . import local_dir, archive, github, gitee, mediawiki, generic_web, stackoverflow, oci_registry, apk  # noqa: E402,F401

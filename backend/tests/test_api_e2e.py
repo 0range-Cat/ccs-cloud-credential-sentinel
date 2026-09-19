@@ -127,7 +127,8 @@ def test_full_flow(client, sample_repo_path, tmp_path):
     # 13. 渠道与规则
     channels = client.get("/api/channels").json()
     caps = {c["key"]: c["status"] for c in channels["capabilities"]}
-    assert caps["code_hosting.github"] == "offline_tested"
+    assert caps["code_hosting.github"] == "live_verified"
+    assert caps["microblog.weibo"] == "blocked"
     rules = client.get("/api/rules").json()
     assert len(rules) >= 30
     rid = rules[0]["id"]
