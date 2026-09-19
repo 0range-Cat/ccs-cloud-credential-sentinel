@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from ..db import get_session
-from ..models import VerificationJob, VerificationResult
+from ..models import Credential, VerificationJob, VerificationResult
 from ..verification.base import all_verifiers
 
 router = APIRouter()

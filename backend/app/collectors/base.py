@@ -38,6 +38,7 @@ class BaseCollector:
     platform: str = ""
     title: str = ""
     version: str = "1.0.0"
+    rate_limited: bool = False  # 采集器在触发平台限流时置 True，流水线据此优雅停止
 
     def __init__(self, config: dict):
         self.config = config or {}

@@ -1,0 +1,7 @@
+feishu:
+  app_secret = Kl8mN3oP4qR5sT6uV7wX8yZ9a0B1c2D3
+github:
+  token: ghp_4a9Ck2XwQqLmN8vBzR5tYuIoP1sDfGhJkL2b
+twilio:
+  account_sid: AC0123456789abcdef0123456789abcdef
+  auth_token: 0f9e8d7c6b5a4392817263544a5b6c7d

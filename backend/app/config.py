@@ -21,6 +21,7 @@ class Settings(BaseSettings):
 
     workers: int = 2
     scheduler_tick_seconds: int = 20
+    background: bool = True   # CCS_BACKGROUND=false 时禁用调度器与验证线程（测试用）
     display_timezone: str = "Asia/Shanghai"
 
     # 默认预算（可在来源配置中覆盖）

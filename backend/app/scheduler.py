@@ -64,8 +64,7 @@ def trigger_manual_run(task_id: int) -> dict:
             raise ValueError("任务不存在")
         if task.status == "running":
             return {"ok": False, "message": "任务正在运行中"}
-        task.status = "running"
-        session.commit()
+        # 不在此处置 running：由 run_task 统一领取，避免防重叠检查误跳过
     finally:
         session.close()
     if _executor is None:

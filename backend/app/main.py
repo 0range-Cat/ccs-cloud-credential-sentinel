@@ -48,13 +48,16 @@ async def lifespan(app: FastAPI):
     finally:
         session.close()
     # 后台任务：调度器（含重启恢复）与验证 worker
-    scheduler.start_background()
-    from .verification import worker as verification_worker
-    verification_worker.start_worker()
+    if settings.background:
+        scheduler.start_background()
+        from .verification import worker as verification_worker
+        verification_worker.start_worker()
     log.info("%s v%s 启动完成", settings.app_name, settings.app_version)
     yield
-    verification_worker.stop_worker()
-    scheduler.shutdown_background()
+    if settings.background:
+        from .verification import worker as verification_worker
+        verification_worker.stop_worker()
+        scheduler.shutdown_background()
 
 
 def create_app() -> FastAPI:

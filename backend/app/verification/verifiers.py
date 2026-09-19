@@ -12,14 +12,12 @@ import httpx
 
 from .base import BaseVerifier, CredentialView, Outcome, register
 
-
 def _guard_redirect(resp: httpx.Response, allowed_host: str) -> Outcome | None:
     if resp.url.host != allowed_host:
         return Outcome(status="error", evidence={"reason": f"重定向到非预期域名: {resp.url.host}"})
     return None
 
 
-@register
 class GitHubPatVerifier(BaseVerifier):
     id = "github-pat"
     title = "GitHub PAT（GET /user 身份确认）"
@@ -27,7 +25,6 @@ class GitHubPatVerifier(BaseVerifier):
     supported_types = ["github_pat"]
     required_fields = ["secret"]
     endpoint_hint = "https://api.github.com/user"
-
     async def verify(self, cred: CredentialView, http_factory) -> Outcome:
         start = time.monotonic()
         try:
@@ -57,3 +54,6 @@ class GitHubPatVerifier(BaseVerifier):
             result = "inconclusive"
         return Outcome(status=result, evidence=evidence,
                        latency_ms=int((time.monotonic() - start) * 1000))
+
+
+register(GitHubPatVerifier())

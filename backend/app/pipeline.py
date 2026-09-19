@@ -24,6 +24,21 @@ from .models import ScanRun, Source, SourceContent, Task
 ENGINE = DetectionEngine()
 
 
+def _run_async(coro):
+    """在独立线程事件循环中执行采集协程。
+
+    兼容两种调用环境：worker 线程（无事件循环，直接 asyncio.run）与
+    API 请求上下文（已在事件循环内，如测试/同步触发，需另起线程）。
+    """
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(coro)
+    import concurrent.futures
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+        return pool.submit(asyncio.run, coro).result()
+
+
 def _merge_config(session: Session, source: Source) -> dict:
     cfg = dict(source.config_json or {})
     # 默认预算来自设置（来源配置可覆盖）
@@ -171,7 +186,7 @@ def _execute(session: Session, collector: BaseCollector, source: Source,
                 stats["stop_reason"] = "rate_limited"
                 break
 
-    asyncio.run(_run())
+    _run_async(_run())
 
 
 def _source_category(source: Source) -> str:

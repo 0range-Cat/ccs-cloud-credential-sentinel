@@ -78,7 +78,7 @@ def enqueue_batch(session, credential_ids: list[int], requested_by: str = "batch
     return out
 
 
-def _process_job(session, job: VerificationJob) -> None:
+def _process_job(session, job: VerificationJob, http_factory_override=None) -> None:
     cred = session.get(Credential, job.credential_id)
     verifier = get_verifier(job.verifier_id)
     if cred is None or verifier is None:
@@ -97,8 +97,9 @@ def _process_job(session, job: VerificationJob) -> None:
     if missing:
         outcome_status, evidence, latency = "missing_context", {"reason": missing}, None
     else:
+        factory = http_factory_override or http_factory
         try:
-            outcome = asyncio.run(verifier.verify(view, http_factory()))
+            outcome = asyncio.run(verifier.verify(view, factory))
             outcome_status, evidence, latency = outcome.status, outcome.evidence, outcome.latency_ms
         except Exception as exc:  # 验证器自身异常
             outcome_status, evidence, latency = "error", {"reason": f"{type(exc).__name__}"}, None
