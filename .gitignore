@@ -22,6 +22,9 @@ logs/
 .env
 .env.*
 !.env.example
+# 合成测试样例（假值，无法认证）必须入库以复现测试与演示
+!backend/tests/fixtures/**/.env
+!examples/demo_repo/.env
 
 # ===== 操作系统 =====
 .DS_Store
