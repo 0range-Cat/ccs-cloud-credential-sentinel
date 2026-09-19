@@ -53,7 +53,7 @@
 | ID | 任务 | 状态 | 验收 |
 | --- | --- | --- | --- |
 | T4.1 | 验证队列 worker：并发/重试/有效期/重新验证 | todo | 语义测试 |
-| T4.2 | 逐个接入最小验证器（AWS STS GetCallerIdentity、Gitee、Slack auth.test、OpenAI 等），逐一审查请求行为 | todo | 每个验证器 mock 测试+审查记录 |
+| T4.2 | 逐个接入最小验证器（AWS STS GetCallerIdentity、Gitee、GitLab、Slack auth.test、Telegram getMe 已接入；OpenAI 等待做），逐一审查请求行为 | doing（5/6 平台 live invalid 实证） | 64 项测试；真实网络假凭据验证记录见 DEVLOG |
 | T4.3 | 凭据类型扩展（云厂商/数据库/服务账号/邮件/短信/OAuth…）与配对完善 | todo | 正反样例测试 |
 | T4.4 | 自动验证策略（按任务/类型/验证器开关） | todo | 策略测试 |
 

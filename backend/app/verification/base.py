@@ -51,9 +51,12 @@ class BaseVerifier:
 _VERIFIERS: dict[str, BaseVerifier] = {}
 
 
-def register(instance: BaseVerifier) -> BaseVerifier:
-    _VERIFIERS[instance.id] = instance
-    return instance
+def register(obj) -> BaseVerifier:
+    """注册验证器实例；传类则自动实例化（防止误注册类导致契约错误）。"""
+    if isinstance(obj, type):
+        obj = obj()
+    _VERIFIERS[obj.id] = obj
+    return obj
 
 
 def get_verifier(verifier_id: str) -> BaseVerifier | None:

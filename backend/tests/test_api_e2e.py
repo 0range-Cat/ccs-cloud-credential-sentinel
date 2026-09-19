@@ -113,10 +113,10 @@ def test_full_flow(client, sample_repo_path, tmp_path):
     history = client.get(f"/api/verification/history?credential_id={ghp_any['id']}").json()
     assert history and history[0]["status"] == "valid"
 
-    # 无验证器类型 → unsupported，保留检测能力
-    aws = next((i for i in findings["items"] if i["type"] == "aws_access_key_id"), None)
-    if aws:
-        resp = client.post(f"/api/findings/{aws['id']}/verify")
+    # 无验证器类型 → unsupported，保留检测能力（AWS/Gitee/GitLab/Slack/Telegram 已有验证器）
+    unsupported_type = next((i for i in findings["items"] if i["type"] == "db_connection_url"), None)
+    if unsupported_type:
+        resp = client.post(f"/api/findings/{unsupported_type['id']}/verify")
         assert resp.json()["status"] == "unsupported"
 
     # 12. 总览统计与口径

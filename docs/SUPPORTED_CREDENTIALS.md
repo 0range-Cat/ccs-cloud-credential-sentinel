@@ -1,6 +1,6 @@
 # 凭据类型能力矩阵（SUPPORTED_CREDENTIALS）
 
-> 更新：2026-09-19 阶段1完成。
+> 更新：2026-09-19 阶段4 第一批完成（验证器 1→6）。
 > 口径：本矩阵只列**有真实规则**的类型（35 条规则 / 35 个类型，别名与变体已合并）；
 > 规则文件：`backend/app/detection/rules/`（cloud / devplatform / services / keys_db 四组）。
 > 检测状态：**offline_tested** = 有正反样例测试且注册表自检通过（tests/test_rules_registry.py）。
@@ -10,7 +10,9 @@
 ## 汇总
 
 - 检测：35 条规则 / 35 个类型，全部 offline_tested（正反样例即测试）。
-- 最小在线验证：1 个已实现并离线测试（GitHub PAT），3 个阶段4 优先接入，其余标 unsupported/planned。
+- 最小在线验证：**6 个类型已实现验证器**（GitHub PAT / AWS AK-SK 配对 / Gitee / GitLab / Slack / Telegram），
+  其中 GitHub valid+invalid 为真实双例，其余 5 个已在真实网络验证 invalid 语义
+  （valid 需用户提供对应平台的自有凭据，逐一回填）。
 - 每条规则含：稳定 ID、类型、厂商、版本、许可证、正则、上下文要求、占位符过滤、
   配对规格、基础置信度、正反样例。
 
@@ -34,7 +36,7 @@
 | --- | --- | --- | --- | --- |
 | GitHub PAT（ghp_/gho_/ghs_/ghu_/ghr_/github_pat_） | github-pat | offline_tested | **offline_tested**（GET /user） | 唯一已实现验证器 |
 | GitLab PAT | gitlab-pat | offline_tested | planned（GET /api/v4/user） | |
-| Gitee 私人令牌 | gitee-token | offline_tested | planned（GET /api/v5/user） | 上下文+32位十六进制 |
+| Gitee 私人令牌 | gitee-token | offline_tested | **live invalid**（GET /api/v5/user） | 上下文+32位十六进制 |
 | npm 令牌 | npm-token | offline_tested | planned | |
 | PyPI 令牌 | pypi-token | offline_tested | planned | |
 | Hugging Face 令牌 | huggingface-token | offline_tested | planned | |

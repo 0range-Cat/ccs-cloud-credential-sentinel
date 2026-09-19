@@ -258,8 +258,14 @@ class DetectionEngine:
             )
             if partner is not None:
                 cand.evidence["paired_with"] = {"rule": other_id, "line": partner.line_start}
-                cand.confidence = min(100, cand.confidence + boost)
+                # 配对字段值同时传递（供 AK/SK 等成对验证器使用；指纹随之区分不同账号）
+                cand.evidence["paired"] = {**cand.evidence.get("paired", {}),
+                                           partner.type: partner.secret}
                 partner.evidence.setdefault("paired_with", {"rule": cand.rule_id, "line": cand.line_start})
+                partner.evidence["paired"] = {**partner.evidence.get("paired", {}),
+                                              cand.type: cand.secret}
+                cand.confidence = min(100, cand.confidence + boost)
+                partner.confidence = min(100, partner.confidence + boost)
 
     @staticmethod
     def _line_range(offsets: list[int], start: int, end: int, n_lines: int) -> tuple[int, int]:

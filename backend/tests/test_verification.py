@@ -49,7 +49,7 @@ def test_no_verifier_enqueued_by_scan(db, sample_repo_path):
 
 
 def test_unsupported_type_keeps_detection(db):
-    cred = make_cred(db, "aws_access_key_id", "AKIA" + rand_alnum(16))
+    cred = make_cred(db, "db_connection_url", "mysql://u:S3cretPassX9@h:3306/db")
     result = worker.enqueue(db, cred.id, "single")
     assert result["queued"] is False and result["status"] == "unsupported"
     db.refresh(cred)

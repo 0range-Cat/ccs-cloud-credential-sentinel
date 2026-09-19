@@ -31,7 +31,7 @@
 | 口径 | 数字 | 证据 |
 | --- | --- | --- |
 | 可检测凭据类型（真实规则+正反样例） | **35 类**（云厂商 9、代码与制品平台 7、AI/邮件/短信/OAuth 9、私钥/数据库/配置载体 10） | SUPPORTED_CREDENTIALS.md；tests/test_rules_registry.py 自检通过 |
-| 可最小在线验证的类型 | **1 类**（GitHub PAT，GET /user）——真实验证 valid/invalid 已实证；阶段4 按最小认证原则逐个扩展（AWS/GitLab/Gitee/Slack 等已列入计划） | EVALUATION.md §4.3 |
+| 可最小在线验证的类型 | **6 类**：GitHub PAT（valid+invalid 双例）、AWS AK/SK 配对（STS GetCallerIdentity）、Gitee、GitLab、Slack、Telegram——后 5 类已在真实网络验证 invalid 语义（假凭据→正确拒绝；valid 需各平台自有凭据，用户可逐个回填） | EVALUATION.md §4.3；SUPPORTED_CREDENTIALS.md |
 | 检测能力 ≠ 验证能力 | 两者分开报告；无验证器的类型保留检测能力 | SUPPORTED_CREDENTIALS.md 口径说明 |
 
 ### 评价 3：平台可扩展性、新监控渠道的易扩展性

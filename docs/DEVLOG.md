@@ -177,3 +177,14 @@
   （ghp_ 假值未触发拦截——GitHub 对自家 PAT 有校验位校验，侧面印证格式逼真度差异。）
 - 脚本开发中修复：409 竞态重试、已存在跳过、时区 aware/naive 对齐、bytes/str 编码。
 - 数据文件：data/latency_log.json（gitignored，含逐批 T0/T1/指纹前缀）。
+
+## 2026-09-19（会话2终：阶段4 验证器扩展第一批）
+
+- 新增 5 个验证器：AWS STS GetCallerIdentity（自实现最小 SigV4，仅身份确认，需 AK/SK 配对）、
+  Gitee /api/v5/user、GitLab /api/v4/user（PRIVATE-TOKEN）、Slack auth.test、Telegram getMe。
+- 引擎配对升级：配对时传递字段值（paired），AWS 指纹随之区分不同账号（同 SK 不同 AK 不合并）。
+- base.register 修复：装饰器传类自动实例化（杜绝"注册了类"的契约错误）。
+- 测试：+10 项（SigV4 结构/确定性、五平台状态映射、配对值传递、指纹分账号），全量 **64 passed**。
+- 真实网络 invalid 实证（假凭据，无枚举无业务数据）：gitee 401→invalid、gitlab 401→invalid、
+  slack invalid_auth→invalid、telegram 401→invalid、aws 403→invalid（签名被 AWS 正确受理）。
+- 各验证器 valid 路径待用户提供对应平台自有凭据后逐一回填（GitHub 已双例）。
