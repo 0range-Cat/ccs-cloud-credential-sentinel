@@ -1,56 +1,73 @@
 # 渠道能力矩阵（SUPPORTED_CHANNELS）
 
-> 更新：2026-09-19 阶段1完成。
-> 口径：渠道类别 ≠ 具体平台；自动监控 ≠ 导入扫描（两者分开计，本地导入不虚增类别数）。
-> 状态定义：planned（规划）/ implemented（代码已实现）/ offline_tested（离线测试通过，
-> 平台响应样例注入）/ live_verified（真实接入验证通过，需用户账号条件）。
+> 更新：2026-09-19 阶段2 第一批完成。
+> 口径：渠道类别 ≠ 具体平台；自动监控 ≠ 导入扫描（本地导入不计入公开渠道类别数）。
+> 状态：planned / implemented / offline_tested（平台响应样例注入测试）/
+> **live_verified（真实公网渠道实采验证，含证据）** / blocked（外部条件受限，如实记录）。
 
-## 总览（7 类渠道 + 本地导入）
+## 总览
 
-| 渠道类别 | 具体平台 | 状态 | 自动监控 | 导入/手动扫描 |
-| --- | --- | --- | --- | --- |
-| 代码托管 | GitHub | **offline_tested** | 仓库树轮询（阶段1 当前文件树；历史扫描阶段2） | 支持指定仓库 |
-| 代码托管 | Gitee | planned（阶段2；内容/树接口调研确认匿名可用） | - | - |
-| Wiki | MediaWiki 兼容 | planned（阶段2；recentchanges+rccontinue 游标调研可行） | - | - |
-| 微博 | 微博 | planned（阶段2；**无合规公开检索接口**，需登录态，如实记录障碍） | - | - |
-| 知识分享 | 博客园 RSS / Stack Overflow API | planned（阶段2；调研确认匿名可行） | - | - |
-| 知识分享 | CSDN / 掘金 | planned（无官方接口，将以合规抓取单独评估，不虚报） | - | - |
-| 知识分享 | 通用 RSS/Sitemap/URL | planned（阶段2） | - | - |
-| 容器镜像 | OCI/Docker Registry 兼容 | planned（阶段3；Docker Hub 匿名 token 流程调研打通） | - | - |
-| App | Android APK | planned（阶段3；Androguard 选型完成） | - | 上传扫描为输入能力 |
-| 小程序 | 合法取得的产物 | planned（阶段3；**无合法公开获取途径**，仅上传/目录分析） | - | 上传扫描为输入能力 |
-| 本地导入 | 本地目录 / 压缩包 | **offline_tested** | - | ✅ 支持 |
+| 渠道类别 | 具体平台/入口 | 状态 | 增量机制 |
+| --- | --- | --- | --- |
+| 代码托管 | GitHub | offline_tested | 版本缓存（blob sha）；提交历史游标 last_commit_scanned |
+| 代码托管 | **Gitee** | **live_verified** | 版本缓存 |
+| Wiki | **MediaWiki 兼容** | **live_verified** | rccontinue 游标（增量续扫已实测） |
+| 微博 | 微博 | **blocked**（无合规公开接口，不绕过） | — |
+| 知识分享 | **博客园（RSS）** | **live_verified** | ETag/Last-Modified 条件请求 |
+| 知识分享 | **Stack Overflow** | **live_verified** | 版本缓存 + 配额自读 |
+| 知识分享 | **通用 RSS/Atom/Sitemap/URL** | **live_verified**（经博客园实测） | ETag/Last-Modified |
+| 知识分享 | CSDN / 掘金 | planned（无官方接口，合规抓取单独评估） | — |
+| 容器镜像 | OCI/Docker Registry | planned（阶段3） | digest |
+| App | Android APK | planned（阶段3） | — |
+| 小程序 | 合法取得的产物 | planned（阶段3） | — |
+| 本地导入 | 本地目录/压缩包 | offline_tested | 内容哈希/成员元数据 |
 
-当前计入"具体平台数"：GitHub（离线测试通过，待真实接入验收）+ 本地目录/压缩包导入（不计入公开渠道）。
+**计入口径的实数**：公开渠道类别 6/7 类有具体实现（微博 blocked 如实标注）；
+具体平台/入口 6 个（GitHub、Gitee、MediaWiki、博客园、Stack Overflow、通用订阅入口），
+其中 4 个 live_verified。上传扫描/本地导入不计入。
 
-## 明细：GitHub（offline_tested，真实接入待用户执行 DEMO.md）
+## 明细
 
-- 采集入口：REST `/repos/{owner}/{repo}` + `/git/trees/{branch}?recursive=1` + `/git/blobs/{sha}`。
-- 认证：可选 Token（设置页配置，Fernet 加密）；匿名 60 次/小时、认证 5,000 次/小时（官方口径）。
-- 支持内容：当前默认分支全部文本文件（大小≤配置上限、二进制自动跳过）。
-  Gist/Issue/评论、Git 历史扫描：阶段2 扩展（TODO 已列）。
-- 增量策略：`(source, blob_sha, path, content_hash)` 版本缓存 + fetched 记录；
-  已见内容跳过（实测重复扫描 items_skipped=全部）。
-- 已知限制（如实记录）：
-  - 不假定 Code Search 实时完整（官方限制：10 次/分钟、单查询 1,000 条、需认证）——阶段1 未用 Code Search；
-  - 树接口单次有截断阈值，`tree_truncated` 标记已透传到内容元数据；
-  - 文件级公开时间不可得 → `published_confidence=none`，界面显示"未知"，不参与时延统计；
-  - 本开发网络 `api.github.com` 403（共享出口 IP 配额），真实验收在用户环境按 docs/DEMO.md 执行。
-- 测试方法：平台响应样例注入（tests/test_collectors.py）：
-  happy path / 限流(403+配额头→优雅停止) / 401→认证失败语义 / 404 语义 / 仓库标识解析。
+### Gitee（live_verified）
+- 入口：`https://gitee.com/api/v5` repos/trees/blobs；Token 可选（设置页）。
+- 实采证据（2026-09-19，scripts/live_check.py）：openharmony/docs 实采内容入库，
+  第二轮 6/7 命中版本缓存跳过；匿名限流触发时 rate_limited 优雅停止并如实记录。
+- 限制：匿名限流不稳定（共享出口 IP），生产建议配置 Token；限速数字待核实。
 
-## 明细：本地导入（offline_tested）
+### MediaWiki 兼容（live_verified）
+- 入口：`{站点}/api.php` recentchanges + prop=revisions；命名空间可配。
+- 实采证据：中文维基百科实采 6 条修订入库；rccontinue 游标推进，第二轮拉到全为新变更。
+- 亮点：修订时间戳=该版本公开发布时间（confidence=medium，来源=mediawiki_revision_timestamp），
+  可参与发现时延统计。
+- 踩坑记录：formatversion=2 下修订对象无 revid 字段（按 pageid 映射）；
+  维基媒体拒绝通用 UA（需描述性 UA+联系方式，已内置合规 UA）。
 
-- 本地目录（include/exclude 通配、大小上限、二进制跳过、系统目录排除）。
-- 压缩包 zip/tar：内存逐成员读取；拒绝 `..`/绝对路径成员；跳过符号链接/设备文件；
-  单文件上限 + 512MB 总量上限（防解压炸弹）。
-- Git 仓库副本：按本地目录扫描工作区（`.git` 排除）；远程克隆阶段2 提供。
-- 用途：分析入口与测试入口；界面与统计中单列，不计入公开渠道类别数。
+### 博客园 RSS / 通用 RSS·Sitemap·URL（live_verified）
+- 入口：feed_url / sitemap_url / url 三种模式；平台标识取主机名。
+- 实采证据：博客园首页 RSS 实采 6 条；第二轮 ETag → 304 Not Modified 跳过。
+- Sitemap：lastmod 为站点自述，公开时间记 low 可信；单 URL 用内容哈希去重。
 
-## 真实接入验收状态
+### Stack Overflow（live_verified）
+- 入口：API 2.3 search/advanced + questions?filter=withbody；免 key 配额 300/天。
+- 实采证据：关键词检索实采 6 条问题正文；第二轮版本缓存 6/6 跳过；尊重 backoff/quota。
 
-| 渠道 | 真实验收 | 依据 |
+### GitHub（offline_tested，真实验收待用户环境）
+- 当前文件树 + 提交历史扫描（新→旧、游标截断、历史层残留语义）。
+- 限制（如实）：本开发网络 api.github.com=403（共享 IP 配额）；Code Search 需认证且
+  10次/分、单查询 1000 条上限；文件级公开时间不可得（历史扫描用提交时间，low 可信）。
+- 真实验收路径：docs/DEMO.md。
+
+### 微博（blocked）
+- 调研结论（RESEARCH.md）：无合规公开检索接口；需登录 Cookie；开放平台搜索权限不对普通开发者开放。
+- 系统行为：能力状态 blocked 并给出原因与剩余工作；不做任何绕过访问控制的实现。
+
+## 真实接入验收状态汇总
+
+| 渠道 | live 验收 | 证据位置 |
 | --- | --- | --- |
-| GitHub 公开发现 | **待用户执行** | docs/DEMO.md（用户仅有自己的仓库可用） |
-| GitHub 在线验证 | 待用户配置自有测试凭据后执行 | 验证结果不发布到公开仓库 |
-| 其余渠道 | 未开始（阶段2/3） | 外部账号/条件未提供，任务保留不放弃 |
+| Gitee | ✅（含限流停止语义） | EVALUATION.md §4 |
+| MediaWiki | ✅ | 同上 |
+| 博客园 RSS（通用采集） | ✅ | 同上 |
+| Stack Overflow | ✅ | 同上 |
+| GitHub | 待用户执行 DEMO.md | docs/DEMO.md |
+| 微博/CSDN/掘金/镜像/APK/小程序 | 未开始（阶段2/3，部分外部不可行已标注） | TODO.md |

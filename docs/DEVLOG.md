@@ -74,3 +74,35 @@
 ### T1.10 演示路径 — done（真实接入验收待用户）
 
 - examples/demo_repo 合成样例（无法认证的假值）+ docs/DEMO.md 六步演示指南。
+
+## 2026-09-19（会话2：阶段2 第一批，用户未手动操作，主控继续）
+
+### 网络边界复测
+
+- api.github.com 仍 403（共享出口 IP）；raw.githubusercontent.com 200。
+- **Gitee API / 中文维基百科 / 博客园 RSS / Stack Overflow API 均 200 可直连** →
+  这四个渠道的 live 验收可在本机完成。
+
+### 阶段2 实现（提交 e81dd9e）
+
+- 游标基础设施：BaseCollector 增 cursor_store（流水线注入 dict，运行后持久化 cursors 表）。
+- 新采集器：gitee / mediawiki / generic_web（RSS·Sitemap·URL）/ stackoverflow；
+  GitHub 增提交历史扫描（新→旧、游标截断、提交时间=low 可信公开时间）。
+- 种子发现 API：POST /api/discover/seed 一次生成多渠道任务；纯关键词不做无认证代码搜索。
+- 微博能力状态改 blocked（无合规公开接口，不绕过访问控制）。
+- 新增 13+3 项测试。开发中修复：SO `quota_remaining:0` 被 `or 1` 吞掉；历史 blob 404 软跳过；
+  采集器注册实例化（类被误注册）等。
+
+### live 验收（提交 1bc1b1d，scripts/live_check.py 两轮实测）
+
+- **MediaWiki**：首轮 0 条 → 排查发现两个真实问题并修复：
+  1) 维基媒体对通用 UA 403（curl 200、httpx 默认 UA 403）→ 内置策略合规 UA；
+  2) formatversion=2 修订对象无 revid 字段 → 按 pageid 映射。
+  修复后实采 6 条修订，rccontinue 游标推进，第二轮拉到全为新变更。
+- **博客园 RSS**：实采 6 条；第二轮 ETag → 304 跳过。
+- **Stack Overflow**：实采 6 条；第二轮 6/6 版本缓存跳过。
+- **Gitee**：首轮实采 7 条（openharmony/docs）+ 第二轮 6/7 缓存跳过；后续匿名限流
+  → rate_limited 优雅停止（顺带修复流水线在无产出退出时漏记限流标志）。
+- 四渠道真实内容未检出凭据候选（credentials_total=0，如实记录，不冒充发现）。
+- 能力清单：Gitee/MediaWiki/博客园/SO/通用订阅 → live_verified；微博 → blocked。
+- 最终测试：**54 passed**（2026-09-19）。live 数据保留在 data/live.db（已 gitignore）。

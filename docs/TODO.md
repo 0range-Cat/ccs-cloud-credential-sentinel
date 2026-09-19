@@ -32,12 +32,13 @@
 
 | ID | 任务 | 状态 | 验收 |
 | --- | --- | --- | --- |
-| T2.1 | 持续监控增强：间隔抖动/限流遵循 Retry-After/游标全面接入 | todo | 单测+长跑记录 |
-| T2.2 | Gitee 采集器 | todo | mock 测试；真实验收待用户 token |
-| T2.3 | MediaWiki 适配器（recentchanges/修订增量） | todo | 对公开 wiki 实测或 mock |
-| T2.4 | 微博适配器（合规边界内；无公开接口则明确记录障碍） | todo | 状态与障碍记录 |
-| T2.5 | 知识分享：CSDN/博客园/掘金/StackOverflow + 通用 RSS/Sitemap/URL | todo | mock+样例测试 |
-| T2.6 | 种子驱动发现（组织/域名/关键词→任务生成）+ 时间模型展示 | todo | API 测试 |
+| T2.1 | 持续监控增强：游标基础设施（collector↔DB）/区间抖动/限流遵循 | done | 54 项测试 + live 两轮验证（304/版本缓存/游标） |
+| T2.2 | Gitee 采集器 | done（live_verified） | live_check 实采+限流停止语义；Token 真实验收待用户配置 |
+| T2.3 | MediaWiki 适配器（recentchanges/修订增量） | done（live_verified） | 中文维基百科实采 6 条+游标续扫 |
+| T2.4 | 微博适配器 | blocked | 无合规公开接口；障碍与配置需求已记录（SUPPORTED_CHANNELS/RESEARCH） |
+| T2.5 | 知识分享：博客园/StackOverflow + 通用 RSS/Sitemap/URL | done（博客园/SO/generic live_verified；CSDN/掘金 planned） | live 两轮实测 |
+| T2.6 | 种子驱动发现（组织/域名/关键词→任务生成）+ 时间模型展示 | done | test_discover 3 项；纯关键词不做无认证代码搜索（如实提示） |
+| T2.7 | GitHub 历史提交扫描（新→旧+游标+低可信公开时间） | done（offline_tested） | mock 测试含第二轮游标增量断言；真实验收随 DEMO |
 
 ## 阶段 3：制品类渠道
 
