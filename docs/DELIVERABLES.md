@@ -87,9 +87,9 @@
 | 验证严格最小认证 | ✅ 8 个验证器均为固定端点身份确认，禁重定向、证据不含响应体 | verifiers.py + 测试 |
 | 数量/去重/时间口径明确且经测试 | ✅ | test_pipeline_dedup + 总览统计口径说明 |
 | Windows 部署可复现 | ✅ 实测 | DEPLOYMENT.md §1 |
-| Ubuntu 部署可复现 | 步骤齐备，**未实测**（需服务器） | DEPLOYMENT.md §2 |
+| Ubuntu 部署可复现 | Linux 运行路径已由 Docker（容器即 Linux）实测覆盖；原生部署步骤齐备未重复实测 | DEPLOYMENT.md §2/§3 |
 | Docker 部署可复现 | ✅ 实测（构建+容器运行验证） | DEPLOYMENT.md §3 |
-| PostgreSQL 路径就绪 | ⏳ 连接串/迁移就绪，双库冒烟待做 | DEPLOYMENT.md §4 |
+| PostgreSQL 模式 | ✅ 实测（Docker PG16：迁移+核心流程+幂等全通过） | DEPLOYMENT.md §4；DEVLOG |
 | 文档与代码一致、四项交付件齐全 | ✅ | 本文件 §一 |
 | Git/测试证据/任务状态可追溯 | ✅ | 全量提交历史 + DEVLOG + TODO |
 | 无模拟/未接入/未验证功能被宣传为完成 | ✅（blocked/planned/unsupported 全部如实标注） | 全部矩阵 |

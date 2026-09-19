@@ -198,3 +198,13 @@
 - 采集器最终 10 个（+wxapkg）；wxapkg 开发中修复：条目 offset 相对正文起点的偏移错误
   （测试锁定）；加密包拒绝路径有测试。
 - 最终测试：**71 passed**（2026-09-19）。
+
+## 2026-09-19（会话2终：PostgreSQL 冒烟 + 界面自动化）
+
+- PostgreSQL 双库冒烟（Docker PG16-alpine，一次性容器）：Alembic 迁移直跑 PG 成功；
+  核心流程（采集 7 项→检测 17 候选→16 凭据/17 位置→二次扫描幂等 0 新增→统计）全通过；
+  依赖新增 psycopg[binary]==3.3.6。测试后容器已清理。
+- Playwright+Chromium 界面自动化（scripts/ui_smoke.py）：7/7 PASS——总览渲染、
+  **发现列表默认脱敏（凭据原文零出现断言）**、详情抽屉、渠道矩阵（live_verified/blocked 可见）、
+  设置页、验证中心；截图证据 docs/evidence/（4 张 PNG 入库）。
+- 依赖锁定补充：playwright==1.63.0 / pytest-playwright==0.9.0。

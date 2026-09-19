@@ -122,8 +122,8 @@
 | Windows 原生启动（uvicorn + dist 托管） | ✅ 多次实测（见 §3/DEVLOG） |
 | Docker 镜像构建 + 容器运行 | ✅ 2026-09-19：多阶段构建成功，容器内 API/前端/统计实测正常 |
 | Ubuntu 原生部署 | 步骤齐备未实测（需用户服务器，DEPLOYMENT.md §2） |
-| PostgreSQL 模式 | 连接串/迁移路径就绪，双库冒烟待做（需 PG 实例） |
-| 浏览器自动化界面测试 | blocked（需安装 Playwright 浏览器） |
+| PostgreSQL 模式 | ✅ Docker PG16 实测：Alembic 迁移 + 采集检测入库（16凭据/17位置）+ 幂等 + 统计 |
+| 浏览器自动化界面测试 | ✅ Playwright+Chromium：7/7 PASS（总览/发现列表脱敏/详情抽屉/渠道矩阵/设置/验证中心）；截图 docs/evidence/ |
 
 ## 6. 未完成项与外部限制
 

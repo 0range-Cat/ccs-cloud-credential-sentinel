@@ -62,7 +62,7 @@
 | ID | 任务 | 状态 | 验收 |
 | --- | --- | --- | --- |
 | T5.1 | Windows/Ubuntu/Docker 部署验证 | todo | DEPLOYMENT 按步骤复现 |
-| T5.2 | PostgreSQL 模式核心流程验证 | todo | pytest 双库冒烟 |
+| T5.2 | PostgreSQL 模式核心流程验证 | done | Docker PG16 实测：迁移+采集+检测+去重+统计全通过（DEVLOG） |
 | T5.3 | 性能与恢复测试（重启恢复/重复扫描幂等/资源占用） | todo | EVALUATION 数据 |
-| T5.4 | 关键界面流程浏览器自动化测试 | blocked | 待安装 Playwright 浏览器（环境受限时记录） |
+| T5.4 | 关键界面流程浏览器自动化测试 | done | Playwright+Chromium 7/7 PASS（含界面原文零出现断言）；截图证据 docs/evidence/ |
 | T5.5 | 评估报告/技术说明书/演示指南定稿 | todo | 四项交付件齐全 |
