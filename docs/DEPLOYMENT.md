@@ -57,21 +57,20 @@ sudo systemctl enable --now ccs
 2. `CCS_ACCESS_TOKEN` 环境变量启用系统内置单用户令牌（登录接口 POST /api/login）。
 不要把 8000 端口直接暴露公网（无 TLS 且界面未做登录限速）。
 
-## 3. Docker Compose（未实测——Docker 29 已装，镜像构建在阶段5 验证）
+## 3. Docker Compose（已实测，2026-09-19）
 
-```yaml
-# docker-compose.yml（阶段5 提交正式版本）
-services:
-  app:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile   # 两阶段：node 构建前端 → python 运行
-    ports: ["127.0.0.1:8000:8000"]
-    volumes:
-      - ./data:/app/data               # 数据库 + 主密钥（必须持久化）
-    environment:
-      - CCS_ACCESS_TOKEN=${CCS_ACCESS_TOKEN:-}
+仓库根目录提供 `Dockerfile`（多阶段：node:22-alpine 构建前端 → python:3.12-slim 运行时，
+启动自动执行 Alembic 迁移）与 `docker-compose.yml`。
+
+```bash
+docker compose up -d --build
+# 打开 http://127.0.0.1:8000（默认仅绑定回环；远程部署见 §2 的安全要求）
+docker compose logs -f app
 ```
+
+实测记录（Windows Docker Desktop 29.7.2）：镜像构建成功；容器内 /api/system/info 返回
+35 规则 / 10 采集器 / 8 验证器；前端静态托管正常；/api/overview/stats 正常；
+数据卷 ./data:/app/data（数据库+主密钥随卷持久化）。
 
 ## 4. 数据与密钥（重要）
 

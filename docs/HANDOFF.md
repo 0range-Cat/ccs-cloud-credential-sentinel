@@ -2,16 +2,17 @@
 
 > 每次会话结束前更新。禁止记录真实密钥。
 
-## 当前状态（2026-09-19，会话2结束：阶段2/3 完成，阶段4 第一批验证器完成，受控时延实验完成）
+## 当前状态（2026-09-19，会话2结束：阶段2/3/4 主体完成，阶段5 Docker 已实测）
 
 - 分支：main；最近提交见 `git log --oneline`。
 - 阶段0/1 全部 done；阶段2：T2.1/2.2/2.3/2.5(博客园+SO+通用)/2.6/2.7 done，T2.4 微博 blocked。
 - 测试证据：`cd backend && .venv/Scripts/python -m pytest` → **54 passed**。
 - **live_verified 渠道 7 个**：GitHub（含受控泄露→发现实验）、Gitee、中文维基百科、博客园 RSS、
   Stack Overflow、OCI 容器镜像（alpine:latest）、Android APK（F-Droid）。
-- **验证器 6 个**：GitHub PAT（valid+invalid 双例）、AWS AK/SK 配对（SigV4+STS）、Gitee、GitLab、
-  Slack、Telegram（后 5 个真实网络 invalid 实证）。全量测试 **64 passed**。
-- 采集器 9 个；评价维度主证据集中在 docs/DELIVERABLES.md（答辩口径单一来源）。
+- **验证器 8 个**：GitHub PAT（valid+invalid 双例）、AWS AK/SK 配对（SigV4+STS）、Gitee、GitLab、
+  Slack、Telegram、npm、Hugging Face（后 6 个真实网络 invalid 实证）。全量测试 **71 passed**。
+- 采集器 10 个（+wxapkg 未加密包；加密包合规拒绝）；自动验证策略已实现（默认关）。
+- **Docker 部署已实测**（构建+容器运行验证）；评价维度主证据在 docs/DELIVERABLES.md。
 - 受控实验：20 凭据/21 位置/14 类型检出；P50=25.5s/P95=26.9s（n=3，轮询 8s）；
   数据 data/latency_log.json（gitignored）。
 - 用户 Token 现为第二批（含 Contents:write，已落地加密库）；**实验已完成，建议吊销轮换**。
@@ -21,12 +22,13 @@
 
 ## 下一步（按优先级）
 
-1. 阶段4 剩余：验证队列增强（自动验证策略按任务/类型开关、重新验证间隔执行）、
-   OpenAI/Anthropic/Stripe 等验证器逐个接入；各验证器 valid 路径待用户自有凭据回填。
-2. T3.3 小程序产物：wxapkg 未加密格式解析（加密包不做解密——合规边界）。
-3. 阶段5：Ubuntu/Docker 部署验证、PostgreSQL 冒烟、Playwright 界面测试、评估报告与演示指南定稿。
-4. CSDN/掘金合规抓取评估（无官方接口）。
-5. Androguard 可选安装以解析 APK manifest（当前如实跳过）。
+1. 阶段4 剩余：各验证器 valid 路径待用户自有凭据回填；OpenAI/Anthropic/Stripe 已如实标
+   unsupported（无不枚举资源的合规端点）。
+2. 阶段5 剩余：Ubuntu 原生部署实测（需用户服务器）、PostgreSQL 双库冒烟（需 PG 实例）、
+   Playwright 界面测试（需下载浏览器）、评估报告/技术说明书/演示指南终稿核对。
+3. CSDN/掘金合规抓取评估（无官方接口）。
+4. Androguard 可选安装以解析 APK manifest（当前如实跳过）。
+5. 交付清单核对见 docs/DELIVERABLES.md §五。
 
 ## 环境事实（勿重复踩坑）
 

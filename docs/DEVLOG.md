@@ -188,3 +188,13 @@
 - 真实网络 invalid 实证（假凭据，无枚举无业务数据）：gitee 401→invalid、gitlab 401→invalid、
   slack invalid_auth→invalid、telegram 401→invalid、aws 403→invalid（签名被 AWS 正确受理）。
 - 各验证器 valid 路径待用户提供对应平台自有凭据后逐一回填（GitHub 已双例）。
+
+## 2026-09-19（会话2终：阶段5 Docker 部署实测）
+
+- 新增 Dockerfile（多阶段：node:22-alpine 构建前端 → python:3.12-slim 运行时，启动自动迁移）、
+  docker-compose.yml、.dockerignore；config 增加 CCS_STATIC_DIR 支持容器内静态托管。
+- `docker build` 实测成功；容器运行实测：/api/system/info → 35 规则/10 采集器/8 验证器，
+  UI 托管正常，统计接口正常；测试后容器已停止清理。
+- 采集器最终 10 个（+wxapkg）；wxapkg 开发中修复：条目 offset 相对正文起点的偏移错误
+  （测试锁定）；加密包拒绝路径有测试。
+- 最终测试：**71 passed**（2026-09-19）。

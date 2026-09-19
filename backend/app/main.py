@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse, RedirectResponse
@@ -89,7 +90,7 @@ def create_app() -> FastAPI:
                     return JSONResponse({"detail": "未授权"}, status_code=401)
             return await call_next(request)
 
-    dist = REPO_ROOT / "frontend" / "dist"
+    dist = Path(settings.static_dir) if settings.static_dir else (REPO_ROOT / "frontend" / "dist")
     if dist.is_dir():
         app.mount("/", StaticFiles(directory=str(dist), html=True), name="ui")
     else:

@@ -19,7 +19,7 @@
 | 口径 | 数字 | 证据 |
 | --- | --- | --- |
 | 渠道类别（赛题 7 类） | **7/7 全部有明确结论**：5 类有实现（代码托管/Wiki/知识分享/容器镜像/App），微博 blocked（无合规公开接口）、小程序 planned（wxapkg 专用解析待做），均如实标注 | SUPPORTED_CHANNELS.md |
-| 具体平台/入口（在线与制品渠道） | **8 个**：GitHub（含提交历史）、Gitee、MediaWiki（兼容任意站点）、博客园、Stack Overflow、通用 RSS/Atom/Sitemap/URL、OCI Registry（Docker Hub 实测，兼容 ghcr/阿里云协议）、APK 公开下载入口监控 | 同上 |
+| 具体平台/入口（在线与制品渠道） | **10 个**：GitHub（含提交历史）、Gitee、MediaWiki（兼容任意站点）、博客园、Stack Overflow、通用 RSS/Atom/Sitemap/URL、OCI Registry（Docker Hub 实测）、APK 下载入口监控、未加密 wxapkg 小程序包、本地目录/压缩包（导入分析，不计入渠道） | 同上 |
 | 其中真实接入验证（live_verified） | **7 个**：GitHub（认证态实采+历史扫描）、Gitee、中文维基百科、博客园、Stack Overflow、OCI Registry（alpine:latest 匿名拉取）、APK（F-Droid 官方包） | EVALUATION.md §4 |
 | 导入分析能力（不计入渠道数） | 2 个：本地目录、压缩包（zip/tar，防穿越/防炸弹） | 同上 |
 | 代码托管附加能力 | GitHub 提交历史扫描（历史层残留泄露语义），live 实采 53 条提交内容 | EVALUATION.md §4.3 |
@@ -31,7 +31,7 @@
 | 口径 | 数字 | 证据 |
 | --- | --- | --- |
 | 可检测凭据类型（真实规则+正反样例） | **35 类**（云厂商 9、代码与制品平台 7、AI/邮件/短信/OAuth 9、私钥/数据库/配置载体 10） | SUPPORTED_CREDENTIALS.md；tests/test_rules_registry.py 自检通过 |
-| 可最小在线验证的类型 | **6 类**：GitHub PAT（valid+invalid 双例）、AWS AK/SK 配对（STS GetCallerIdentity）、Gitee、GitLab、Slack、Telegram——后 5 类已在真实网络验证 invalid 语义（假凭据→正确拒绝；valid 需各平台自有凭据，用户可逐个回填） | EVALUATION.md §4.3；SUPPORTED_CREDENTIALS.md |
+| 可最小在线验证的类型 | **8 类**：GitHub PAT（valid+invalid 双例）、AWS AK/SK 配对（STS GetCallerIdentity）、Gitee、GitLab、Slack、Telegram、npm、Hugging Face——后 6 类已在真实网络验证 invalid 语义（假凭据→正确拒绝；valid 需各平台自有凭据，用户可逐个回填）。OpenAI/Anthropic/Stripe 无"不枚举资源"的合规验证端点 → 如实标注 unsupported | EVALUATION.md §4.3；SUPPORTED_CREDENTIALS.md |
 | 检测能力 ≠ 验证能力 | 两者分开报告；无验证器的类型保留检测能力 | SUPPORTED_CREDENTIALS.md 口径说明 |
 
 ### 评价 3：平台可扩展性、新监控渠道的易扩展性
@@ -75,3 +75,24 @@
 - 微博无合规公开接口 → blocked，不做绕过；小程序无合法公开获取途径 → 仅上传分析。
 - 凭据原文 Fernet 加密存储；界面默认脱敏；reveal 留审计；Token 与发现凭据分开管理。
 - 用户真实 Token 仅存于本地加密库（data/ 已 gitignore），未写入任何文档/代码/Git。
+
+## 五、最终完成标准核对（对应 MASTER_PROMPT 第十六节，2026-09-19）
+
+| 标准项 | 状态 | 证据 |
+| --- | --- | --- |
+| 核心采集/检测/存储/复核/验证/展示流程可运行 | ✅ | 真实服务实测 + 71 项测试 |
+| 七类渠道均有具体实现与清晰接入测试状态 | ✅（微博 blocked、小程序容器解析仅未加密格式——均如实标注） | SUPPORTED_CHANNELS.md |
+| 主要凭据类型有真实规则与正反样例 | ✅ 35 类 | SUPPORTED_CREDENTIALS.md；test_rules_registry |
+| 验证默认关闭，支持单条/批量/可选自动 | ✅ | test_verification（扫描零验证请求）+ test_phase45（自动策略） |
+| 验证严格最小认证 | ✅ 8 个验证器均为固定端点身份确认，禁重定向、证据不含响应体 | verifiers.py + 测试 |
+| 数量/去重/时间口径明确且经测试 | ✅ | test_pipeline_dedup + 总览统计口径说明 |
+| Windows 部署可复现 | ✅ 实测 | DEPLOYMENT.md §1 |
+| Ubuntu 部署可复现 | 步骤齐备，**未实测**（需服务器） | DEPLOYMENT.md §2 |
+| Docker 部署可复现 | ✅ 实测（构建+容器运行验证） | DEPLOYMENT.md §3 |
+| PostgreSQL 路径就绪 | ⏳ 连接串/迁移就绪，双库冒烟待做 | DEPLOYMENT.md §4 |
+| 文档与代码一致、四项交付件齐全 | ✅ | 本文件 §一 |
+| Git/测试证据/任务状态可追溯 | ✅ | 全量提交历史 + DEVLOG + TODO |
+| 无模拟/未接入/未验证功能被宣传为完成 | ✅（blocked/planned/unsupported 全部如实标注） | 全部矩阵 |
+
+**整体状态：已实现并验证的部分全部交付；剩余为待用户条件的验收项（Ubuntu/PG/浏览器测试）
+与如实标注的合规受限项（微博/加密小程序包/OpenAI 类验证器）。**

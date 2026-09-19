@@ -18,6 +18,7 @@ class Settings(BaseSettings):
 
     master_key: str = ""     # CCS_MASTER_KEY：优先于 data/master.key 密钥文件
     access_token: str = ""   # CCS_ACCESS_TOKEN：可选单用户访问保护
+    static_dir: str = ""     # CCS_STATIC_DIR：容器内前端产物目录（默认 frontend/dist）
 
     workers: int = 2
     scheduler_tick_seconds: int = 20

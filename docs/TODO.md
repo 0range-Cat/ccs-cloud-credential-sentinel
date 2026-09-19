@@ -46,14 +46,14 @@
 | --- | --- | --- | --- |
 | T3.1 | 容器镜像：OCI registry manifest/config/layers、digest 去重、历史层与 whiteout、大小限制 | done（live_verified） | 58 项测试含 whiteout/最终视图断言；alpine:latest 匿名实采 40 条 |
 | T3.2 | Android APK：zip/dex 字符串解析、可选 Androguard manifest、上传+URL 版本监控 | done（live_verified） | mock APK 测试；F-Droid 官方 APK 实采 25 条；二进制 manifest 未装 Androguard 时如实跳过 |
-| T3.3 | 小程序产物：合法取得的包/解包目录扫描、公开入口监控可行性记录 | todo | 样例产物测试 + 限制记录；解包目录可先经本地导入扫描 |
+| T3.3 | 小程序产物：未加密 wxapkg 容器解析 + 上传/URL 入口；加密包明确拒绝（合规边界，不解密）；解包目录经本地目录扫描 | done（offline_tested） | 测试含加密拒绝/越界拒绝；线上包无合法公开获取途径已记录 |
 
 ## 阶段 4：验证与凭据覆盖扩展（可与阶段2/3部分并行）
 
 | ID | 任务 | 状态 | 验收 |
 | --- | --- | --- | --- |
-| T4.1 | 验证队列 worker：并发/重试/有效期/重新验证 | todo | 语义测试 |
-| T4.2 | 逐个接入最小验证器（AWS STS GetCallerIdentity、Gitee、GitLab、Slack auth.test、Telegram getMe 已接入；OpenAI 等待做），逐一审查请求行为 | doing（5/6 平台 live invalid 实证） | 64 项测试；真实网络假凭据验证记录见 DEVLOG |
+| T4.1 | 验证队列 worker：限量限速、自动验证策略（默认关；开启后未验证→入队、超期→重验、瞬态失败→重试） | done | 测试覆盖开关与各分支（test_phase45） |
+| T4.2 | 最小验证器：GitHub/Gitee/GitLab/Slack/Telegram/AWS(配对)/npm/HF 共 8 个已接入；OpenAI/Anthropic/Stripe 无不枚举资源的合规验证端点 → unsupported（如实记录） | doing（8 平台；6 个真实网络 invalid 实证） | 71 项测试；真实网络假凭据验证记录见 DEVLOG |
 | T4.3 | 凭据类型扩展（云厂商/数据库/服务账号/邮件/短信/OAuth…）与配对完善 | todo | 正反样例测试 |
 | T4.4 | 自动验证策略（按任务/类型/验证器开关） | todo | 策略测试 |
 

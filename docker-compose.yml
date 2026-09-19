@@ -1,0 +1,15 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ccs:latest
+    container_name: ccs-app
+    ports:
+      - "127.0.0.1:8000:8000"   # 远程部署改为反代/加访问令牌后再暴露
+    volumes:
+      - ./data:/app/data        # 数据库 + 主密钥（必须持久化并连同主密钥备份）
+    environment:
+      CCS_ACCESS_TOKEN: "${CCS_ACCESS_TOKEN:-}"
+      CCS_WORKERS: "${CCS_WORKERS:-2}"
+    restart: unless-stopped
