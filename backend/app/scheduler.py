@@ -52,6 +52,11 @@ def _tick() -> None:
             session.commit()
             assert _executor is not None
             _executor.submit(run_task, task.id, "schedule")
+        # 自动验证策略（默认关闭；开启后按设置限量入队）
+        from .verification.worker import auto_enqueue_due
+        auto_enqueue_due(session)
+    except Exception:
+        log.exception("调度 tick 异常")
     finally:
         session.close()
 

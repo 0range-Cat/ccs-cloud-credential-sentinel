@@ -299,3 +299,74 @@ class TelegramBotVerifier(BaseVerifier):
         if resp.status_code == 429:
             return Outcome(status="rate_limited", evidence=evidence, latency_ms=_latency(start))
         return Outcome(status="inconclusive", evidence=evidence, latency_ms=_latency(start))
+
+
+@register
+class NpmTokenVerifier(BaseVerifier):
+    id = "npm-whoami"
+    title = "npm 令牌（registry whoami 身份确认）"
+    version = "1.0.0"
+    supported_types = ["npm_token"]
+    required_fields = ["secret"]
+    endpoint_hint = "https://registry.npmjs.org/-/user/npm.whoami"
+
+    async def verify(self, cred: CredentialView, http_factory) -> Outcome:
+        start = time.monotonic()
+        try:
+            async with http_factory() as client:
+                resp = await client.get("https://registry.npmjs.org/-/user/npm.whoami",
+                                        headers={"Authorization": f"Bearer {cred.secret}",
+                                                 "User-Agent": "ccs-verifier",
+                                                 "Accept": "application/json"})
+        except (httpx.TimeoutException, httpx.ConnectError, httpx.HTTPError):
+            return Outcome(status="network_error",
+                           evidence={"endpoint": self.endpoint_hint}, latency_ms=_latency(start))
+        redirected = _guard_redirect(resp, "registry.npmjs.org")
+        if redirected:
+            return redirected
+        status = resp.status_code
+        evidence = {"endpoint": self.endpoint_hint, "http_status": status}
+        if status == 200:
+            result = "valid"
+        elif status == 401:
+            result = "invalid"
+        elif status == 429:
+            result = "rate_limited"
+        else:
+            result = "inconclusive"
+        return Outcome(status=result, evidence=evidence, latency_ms=_latency(start))
+
+
+@register
+class HuggingFaceVerifier(BaseVerifier):
+    id = "huggingface-whoami"
+    title = "Hugging Face 令牌（whoami-v2 身份确认）"
+    version = "1.0.0"
+    supported_types = ["huggingface_token"]
+    required_fields = ["secret"]
+    endpoint_hint = "https://huggingface.co/api/whoami-v2"
+
+    async def verify(self, cred: CredentialView, http_factory) -> Outcome:
+        start = time.monotonic()
+        try:
+            async with http_factory() as client:
+                resp = await client.get("https://huggingface.co/api/whoami-v2",
+                                        headers={"Authorization": f"Bearer {cred.secret}",
+                                                 "User-Agent": "ccs-verifier"})
+        except (httpx.TimeoutException, httpx.ConnectError, httpx.HTTPError):
+            return Outcome(status="network_error",
+                           evidence={"endpoint": self.endpoint_hint}, latency_ms=_latency(start))
+        redirected = _guard_redirect(resp, "huggingface.co")
+        if redirected:
+            return redirected
+        status = resp.status_code
+        evidence = {"endpoint": self.endpoint_hint, "http_status": status}
+        if status == 200:
+            result = "valid"
+        elif status in (401, 403):
+            result = "invalid"
+        elif status == 429:
+            result = "rate_limited"
+        else:
+            result = "inconclusive"
+        return Outcome(status=result, evidence=evidence, latency_ms=_latency(start))

@@ -75,6 +75,57 @@ def enqueue_batch(session, credential_ids: list[int], requested_by: str = "batch
     return out
 
 
+def auto_enqueue_due(session, limit: int = 5) -> int:
+    """自动验证策略（T4.1）。仅当 verification.auto_enabled 开启时由调度 tick 调用：
+    - not_requested 且类型有验证器 → 入队
+    - valid/invalid 且 verified_at 超过 reverify_days → 重新入队
+    - rate_limited/network_error/error/inconclusive 且 verified_at 超过 1 小时 → 重试入队
+    每次调用限量（limit），防止队列积压；queued/running 不重复入队。
+    """
+    from .base import all_verifiers
+
+    if not settings_service.get_setting(session, "verification.auto_enabled"):
+        return 0
+    supported = {t for v in all_verifiers().values() for t in v.supported_types}
+    now = utcnow()
+    reverify_days = int(settings_service.get_setting(session, "verification.reverify_days") or 30)
+    enqueued = 0
+
+    pending = session.query(Credential).filter(Credential.verification_status == "not_requested").all()
+    for cred in pending:
+        if enqueued >= limit:
+            break
+        if cred.type not in supported:
+            continue
+        if enqueue(session, cred.id, "auto").get("queued"):
+            enqueued += 1
+
+    if enqueued < limit:
+        reverify_cut = now - __import__("datetime").timedelta(days=reverify_days)
+        stale = session.query(Credential).filter(
+            Credential.verification_status.in_(("valid", "invalid")),
+            Credential.verified_at.isnot(None),
+            Credential.verified_at < reverify_cut).all()
+        for cred in stale:
+            if enqueued >= limit:
+                break
+            if enqueue(session, cred.id, "auto").get("queued"):
+                enqueued += 1
+
+    if enqueued < limit:
+        retry_cut = now - __import__("datetime").timedelta(hours=1)
+        transient = session.query(Credential).filter(
+            Credential.verification_status.in_(("rate_limited", "network_error", "error", "inconclusive")),
+            Credential.verified_at.isnot(None),
+            Credential.verified_at < retry_cut).all()
+        for cred in transient:
+            if enqueued >= limit:
+                break
+            if enqueue(session, cred.id, "auto").get("queued"):
+                enqueued += 1
+    return enqueued
+
+
 def _process_job(session, job: VerificationJob, http_factory_override=None) -> None:
     cred = session.get(Credential, job.credential_id)
     verifier = get_verifier(job.verifier_id)
