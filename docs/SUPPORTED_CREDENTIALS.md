@@ -1,7 +1,7 @@
 # 凭据类型能力矩阵（SUPPORTED_CREDENTIALS）
 
 > 更新：2026-09-19 阶段4 第一批完成（验证器 1→6）。
-> 口径：本矩阵只列**有真实规则**的类型（35 条规则 / 35 个类型，别名与变体已合并）；
+> 口径：本矩阵只列**有真实规则**的类型（43 条规则 / 43 个类型，别名与变体已合并）；
 > 规则文件：`backend/app/detection/rules/`（cloud / devplatform / services / keys_db 四组）。
 > 检测状态：**offline_tested** = 有正反样例测试且注册表自检通过（tests/test_rules_registry.py）。
 > 最小在线验证与检测状态分开报告；无验证器 ≠ 检测能力缺失。

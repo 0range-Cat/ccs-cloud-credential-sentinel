@@ -37,3 +37,31 @@ def test_seed_keyword_note_is_honest(client):
 def test_seed_rejects_bad_mode(client):
     resp = client.post("/api/discover/seed", json={"feeds": ["x"], "mode": "hourly"})
     assert resp.status_code == 400
+
+
+def test_seed_org_expansion(client, monkeypatch):
+    """组织/用户种子 → 公开仓库列表自动扩展（mock 平台响应）。"""
+    import app.api.discover as d
+
+    monkeypatch.setattr(d, "fetch_repo_list",
+                        lambda platform, org, token, limit: [f"{org}/repo{i}" for i in range(3)])
+    resp = client.post("/api/discover/seed", json={
+        "name_prefix": "组织验收", "github_orgs": ["octocat"],
+        "max_repos_per_org": 3, "mode": "manual"})
+    data = resp.json()
+    assert data["count"] == 3
+    assert any("扩展 3 个任务" in n for n in data["notes"])
+
+
+def test_seed_org_failure_recorded_honestly(client, monkeypatch):
+    import app.api.discover as d
+    from fastapi import HTTPException
+
+    def boom(platform, org, token, limit):
+        raise HTTPException(404, "组织/用户不存在")
+    monkeypatch.setattr(d, "fetch_repo_list", boom)
+    resp = client.post("/api/discover/seed", json={
+        "github_orgs": ["ghost-org"], "mode": "manual"})
+    data = resp.json()
+    assert data["count"] == 0
+    assert any("扩展失败" in n and "不存在" in n for n in data["notes"]), "失败原因必须如实返回"

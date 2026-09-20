@@ -10,7 +10,7 @@
 - **live_verified 渠道 7 个**：GitHub（含受控泄露→发现实验）、Gitee、中文维基百科、博客园 RSS、
   Stack Overflow、OCI 容器镜像（alpine:latest）、Android APK（F-Droid）。
 - **验证器 8 个**：GitHub PAT（valid+invalid 双例）、AWS AK/SK 配对（SigV4+STS）、Gitee、GitLab、
-  Slack、Telegram、npm、Hugging Face（后 6 个真实网络 invalid 实证）。全量测试 **71 passed**。
+  Slack、Telegram、npm、Hugging Face（后 6 个真实网络 invalid 实证）。全量测试 **74 passed**；规则 43 条；组织→仓库种子扩展已实现（live 待新 Token：用户 Token 已失效 401）；Androguard 已装并激活 APK manifest。
 - 采集器 10 个（+wxapkg 未加密包；加密包合规拒绝）；自动验证策略已实现（默认关）。
 - **Docker 部署已实测**（构建+容器运行验证）；评价维度主证据在 docs/DELIVERABLES.md。
 - 受控实验：20 凭据/21 位置/14 类型检出；P50=25.5s/P95=26.9s（n=3，轮询 8s）；

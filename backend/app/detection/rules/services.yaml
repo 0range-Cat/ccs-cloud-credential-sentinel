@@ -164,3 +164,41 @@
       - 'GOOGLE_CLIENT_SECRET=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'
     negatives:
       - 'GOCSPX-short'
+
+
+# 第三批扩展：SaaS 令牌
+- id: sentry-dsn
+  title: Sentry DSN（客户端密钥）
+  type: sentry_dsn
+  vendor: sentry
+  version: 1
+  license: MIT
+  confidence: 85
+  patterns:
+    - '(https://[0-9a-f]{32}@(?:sentry\.io|o[0-9]+\.ingest\.sentry\.io)/([0-9]+))'
+  secret_group: 1
+  min_length: 50
+  tests:
+    positives:
+      - 'SENTRY_DSN=https://8f2c94d1b7e35a06c9f8d2e41b7a9c63@sentry.io/1234567'
+      - 'dsn: https://8f2c94d1b7e35a06c9f8d2e41b7a9c63@o123456.ingest.sentry.io/7654321'
+    negatives:
+      - 'https://8f2c94d1b7e35a06c9f8d2e41b7a9c63@example.com/1234567'
+
+- id: notion-api-key
+  title: Notion 集成密钥（secret_）
+  type: notion_api_key
+  vendor: notion
+  version: 1
+  license: MIT
+  confidence: 90
+  patterns:
+    - '(?<![A-Za-z0-9])(secret_[A-Za-z0-9]{43})(?![A-Za-z0-9])'
+  secret_group: 1
+  min_length: 50
+  max_length: 50
+  tests:
+    positives:
+      - 'NOTION_KEY=secret_4a9Ck2XwQqLmN8vBzR5tYuIoP1sDfGhJkL2b3mXzQaA'
+    negatives:
+      - 'NOTION_KEY=secret_short'

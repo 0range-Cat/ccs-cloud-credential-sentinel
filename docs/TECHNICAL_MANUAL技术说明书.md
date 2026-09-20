@@ -50,7 +50,7 @@
 └──────────┬────────────┘      └───────────────────────────────┘
            │
 ┌──────────▼─────────────────────────────────────────────────────┐
-│ 检测子系统 detection/：规则注册表（YAML×35）+ 多信号引擎          │
+│ 检测子系统 detection/：规则注册表（YAML×43）+ 多信号引擎          │
 │ 存储层 SQLAlchemy 2 ORM × 13 表 → SQLite(WAL) / PostgreSQL      │
 │ 敏感字段 Fernet 加密（主密钥外部化）                               │
 └─────────────────────────────────────────────────────────────────┘
@@ -74,7 +74,7 @@
 | 调度 | APScheduler BackgroundScheduler（仅心跳） | 3.11.3 |
 | 安全 | cryptography Fernet | 50.0.1 |
 | 前端 | Vue 3 + TypeScript + Element Plus + Vite | vue 3.5 / vite 6 |
-| 测试 | pytest（71 项）+ Playwright/Chromium（界面 7 流程） | 9.1.1 / 1.63.0 |
+| 测试 | pytest（74 项）+ Playwright/Chromium（界面 7 流程） | 9.1.1 / 1.63.0 |
 | 部署 | Windows/Ubuntu 原生 uvicorn；Docker 多阶段镜像 | 实测通过 |
 
 运行形态：`uvicorn app.main:app` 单进程；采集协程在 worker 线程的事件循环中执行
@@ -302,7 +302,7 @@ live_verified/blocked）。迁移：`alembic/versions/659df6833a92_baseline`，�
 - `engine.py`：§2.1 全部管线；输出 `Candidate`（rule_id/version/type/vendor/secret/
   confidence/行号/span/verifier_id/evidence）。资源约束常量在文件头（1MB 输入、
   20 次解码、20K 块字符等）。
-- `rules/*.yaml`（4 组 35 条）：cloud（9：AWS/阿里云/腾讯云/Azure×2/GCP 服务账号）、
+- `rules/*.yaml`（5 组 43 条；第三批扩展：云预签名URL/飞书·Slack Webhook/GitLab Runner/Git认证URL/Grafana/Sentry DSN/Notion）：cloud（9：AWS/阿里云/腾讯云/Azure×2/GCP 服务账号）、
   devplatform（12：GitHub/GitLab/Gitee/Slack/npm/PyPI/HF/DockerHub/Telegram/Stripe×2/钉钉/飞书企微）、
   services（8：OpenAI/Anthropic/SendGrid/Mailgun/Resend/Twilio×2/OAuth×2）、
   keys_db（6：私钥块/数据库连接串/通用配置赋值/配置口令）。每条含 positives/negatives。
@@ -324,7 +324,7 @@ version_kind/text/size/published 三字段/fetched_at/extra）+ `BaseCollector`
 | `generic_web` | feedparser 解析 RSS/Atom（ETag/LM 条件请求、HTML 剥离、发布时间=medium）；sitemap 解析（lastmod=low）；单 URL（内容哈希版本）；平台标识=主机名 |
 | `stackoverflow` | search/advanced → questions?filter=withbody 两步；尊重 backoff 与 quota_remaining；创建时间=medium |
 | `oci_registry` | 镜像引用解析（library/ 前缀、digest/tag）、匿名 Bearer token 流程、多架构清单选择（amd64 优先）、**config digest 作镜像版本**、逐层 gzip tar 解析、whiteout/opaque 按层序应用（先作用于下层再入本层文件）产出 `in_final_view` 标记、构建时间=low；层 307→CDN 需跟随重定向（验证器仍禁重定向） |
-| `apk` | APK=zip：assets/res-raw/META-INF/文本后缀直接扫；classes*.dex 提取 ≥8 字符可打印串后扫；二进制 AndroidManifest 需 Androguard（未装如实跳过）；URL 下载入口监控以整包 sha256 为版本；PK 头校验 |
+| `apk` | APK=zip：assets/res-raw/META-INF/文本后缀直接扫；classes*.dex 提取 ≥8 字符可打印串后扫；二进制 AndroidManifest 由 Androguard 解析（已安装，实测解析出包名/版本写入 extra）；URL 下载入口监控以整包 sha256 为版本；PK 头校验 |
 | `wxapkg` | 未加密容器格式解析（0xBE，条目 offset 相对正文起点）；加密包（V1MMWX）明确拒绝（合规边界）；索引/正文/条目三级越界校验 |
 
 ### 3.5 流水线与调度（pipeline.py / scheduler.py）
@@ -398,7 +398,7 @@ Vue 3 `<script setup>` + Element Plus + hash 路由六页：总览（统计卡�
 
 ## 5. 测试与质量保障
 
-- **71 项 pytest**：规则注册表自检（35 条正反样例）、引擎行为（配对/解码/结构化/过滤/消解/截断）、
+- **74 项 pytest**：规则注册表自检（43 条正反样例）、引擎行为（配对/解码/结构化/过滤/消解/截断）、
   安全基础、10 个采集器（平台响应样例注入：happy path/限流/认证过期/穿越拒绝/解压炸弹防护）、
   流水线（去重/多位置/幂等/忽略/恢复/防重叠）、验证语义（默认关闭零验证请求、11 态映射、
   历史追加、禁重定向、SigV4 结构）、API 端到端（设置→扫描→复核→导出→验证→导入→恢复）、

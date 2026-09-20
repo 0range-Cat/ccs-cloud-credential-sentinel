@@ -2,9 +2,11 @@
 
 诚实口径：仅根据用户提供的具体目标（仓库地址/站点 API/订阅源/关键词）生成任务；
 GitHub/Gitee 的代码搜索接口需要认证且有结果上限，纯关键词不会自动生成代码搜索任务。
+组织/用户种子通过平台的公开仓库列表接口扩展为逐仓库任务（限量），不用代码搜索。
 """
 from __future__ import annotations
 
+import httpx
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -20,13 +22,42 @@ class SeedIn(BaseModel):
     name_prefix: str = "种子"
     github_repos: list[str] = []
     gitee_repos: list[str] = []
+    github_orgs: list[str] = []     # 组织/用户 → 公开仓库列表自动扩展
+    gitee_orgs: list[str] = []
     wiki_api_urls: list[str] = []
-    feeds: list[str] = []          # RSS/Atom 订阅源
+    feeds: list[str] = []           # RSS/Atom 订阅源
     sitemaps: list[str] = []
     urls: list[str] = []
     stackoverflow_keywords: list[str] = []
     mode: str = "continuous"
     interval_sec: int = 300
+    max_repos_per_org: int = 20
+
+
+def fetch_repo_list(platform: str, org: str, token: str, limit: int) -> list[str]:
+    """组织/用户 → 公开仓库 full_name 列表（先 orgs 再 users 端点）。测试可 monkeypatch。"""
+    headers = {"User-Agent": "ccs-seed", "Accept": "application/vnd.github+json"}
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    candidates = ([
+        f"https://api.github.com/orgs/{org}/repos",
+        f"https://api.github.com/users/{org}/repos",
+    ] if platform == "github" else [
+        f"https://gitee.com/api/v5/orgs/{org}/repos",
+        f"https://gitee.com/api/v5/users/{org}/repos",
+    ])
+    last_status = 0
+    for url in candidates:
+        resp = httpx.get(url, headers=headers, timeout=20,
+                         params={"per_page": min(100, limit), "sort": "updated"})
+        last_status = resp.status_code
+        if resp.status_code == 200 and isinstance(resp.json(), list):
+            return [x["full_name"] for x in resp.json()[:limit]]
+        if resp.status_code in (403, 429):
+            raise HTTPException(429, f"{platform} 限流，请稍后或配置 Token（{org}）")
+    if last_status == 404:
+        raise HTTPException(404, f"{platform} 组织/用户不存在: {org}")
+    raise HTTPException(502, f"{platform} 仓库列表获取失败（{last_status}）: {org}")
 
 
 def _create(session: Session, name: str, collector_key: str, config: dict,
@@ -60,6 +91,28 @@ def discover_seed(body: SeedIn, session: Session = Depends(get_session)):
         sid = _create(session, f"{body.name_prefix}-Gitee-{repo}", "gitee", {"repo": repo},
                       body.mode, body.interval_sec)
         created.append({"source_id": sid, "collector": "gitee", "target": repo})
+
+    # 组织/用户种子 → 公开仓库列表自动扩展（限量；不用代码搜索）
+    from .. import settings_service
+    gh_token = settings_service.get_setting(session, "platform.github.token") or ""
+    gt_token = settings_service.get_setting(session, "platform.gitee.token") or ""
+    for platform, orgs, collector in (("github", body.github_orgs, "github"),
+                                      ("gitee", body.gitee_orgs, "gitee")):
+        for org in orgs:
+            try:
+                repos = fetch_repo_list(platform, org,
+                                        gh_token if platform == "github" else gt_token,
+                                        max(1, min(100, body.max_repos_per_org)))
+            except HTTPException as exc:
+                notes.append(f"{platform}:{org} 扩展失败——{exc.detail}")
+                continue
+            for repo in repos:
+                sid = _create(session, f"{body.name_prefix}-{collector}-{repo}", collector,
+                              {"repo": repo}, body.mode, body.interval_sec)
+                created.append({"source_id": sid, "collector": collector, "target": repo})
+            notes.append(f"{platform}:{org} 已按公开仓库列表扩展 {len(repos)} 个任务"
+                         f"（上限 {body.max_repos_per_org}，按最近更新排序）")
+
     for api_url in body.wiki_api_urls:
         sid = _create(session, f"{body.name_prefix}-Wiki-{api_url[:60]}", "mediawiki",
                       {"api_url": api_url}, body.mode, body.interval_sec)

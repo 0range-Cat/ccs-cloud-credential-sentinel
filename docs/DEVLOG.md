@@ -208,3 +208,16 @@
   **发现列表默认脱敏（凭据原文零出现断言）**、详情抽屉、渠道矩阵（live_verified/blocked 可见）、
   设置页、验证中心；截图证据 docs/evidence/（4 张 PNG 入库）。
 - 依赖锁定补充：playwright==1.63.0 / pytest-playwright==0.9.0。
+
+## 2026-09-20（会话3：规则扩批 43 + 组织扩展 + Androguard 激活）
+
+- 规则 35→43：云预签名URL、飞书/Slack Webhook、GitLab Runner（glrt-）、Git HTTP 认证URL、
+  Grafana glsa_、Sentry DSN、Notion secret_。自检通过（样例字符数错一处已修）。
+- 种子发现：github_orgs/gitee_orgs → 公开仓库列表自动扩展（orgs→users 回退、限量、
+  失败原因如实写入 notes；不用代码搜索）。mock 测试 2 项。
+  live 受阻：**用户 Token 已失效（401 Bad credentials，推测已按建议吊销）**，匿名对照 200；
+  功能逻辑 mock 锁定，待新 Token 补 live。
+- Androguard 4.1.4 装机成功：APK manifest 解析激活（F-Droid 实测 org.fdroid.fdroid v1.23.2
+  写入 extra）；离线 fixture 用真实 manifest（48KB，无凭据）；74 项测试通过。
+- 注意：交付文档被外部重命名加中文后缀（TECHNICAL_MANUAL技术说明书.md 等），链接已同步；
+  docs/支持渠道.md 为用户新建摘要文档，未改动。

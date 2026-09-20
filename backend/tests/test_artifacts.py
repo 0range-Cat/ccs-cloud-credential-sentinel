@@ -8,6 +8,7 @@ import random
 import string
 import tarfile
 import zipfile
+from pathlib import Path
 
 import httpx
 
@@ -206,3 +207,21 @@ def test_apk_rejects_non_zip():
         raise AssertionError
     except CollectorError:
         pass
+
+
+def test_apk_manifest_androguard():
+    """装了 Androguard 时，真实二进制 manifest（F-Droid，离线 fixture）应解析出包名/版本。"""
+    try:
+        from androguard.core.axml import AXMLPrinter  # noqa: F401
+    except ImportError:
+        import pytest
+        pytest.skip("androguard 未安装")
+
+    manifest_bin = (Path(__file__).resolve().parent / "fixtures" / "fdroid_manifest.bin").read_bytes()
+    apk = _make_apk({"AndroidManifest.xml": manifest_bin,
+                     "assets/a.env": b"API_KEY=J8kQ2wL5vB8nM4cR6tZ0aS3dF7yG1x"})
+    c = ApkCollector({})
+    items = _scan_bytes(c, apk)
+    assert items, "文本条目应被扫描"
+    assert all(i.extra.get("package") == "org.fdroid.fdroid" for i in items)
+    assert items[0].extra.get("version_name") == "1.23.2"

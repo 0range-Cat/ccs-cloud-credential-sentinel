@@ -19,7 +19,7 @@
 | 其中合规受限类别 | 2 类 | 微博 = blocked（无合规公开接口）；小程序 = 容器解析仅支持未加密包（加密包不做解密），均如实标注 |
 | 具体平台 / 入口总数（在线 + 制品） | **10 个** | GitHub、Gitee、MediaWiki、博客园、Stack Overflow、通用 RSS/Atom/Sitemap/URL、OCI Registry、APK 下载入口、未加密 wxapkg、（另有本地目录/压缩包导入，属分析入口，**不计入**渠道数） |
 | 其中 live_verified | **7 个** | 7/8 在线与制品入口完成真实渠道实采验证 |
-| 可检索/检测的凭据类型 | **35 类** | 35 条真实规则，全部带正反样例并通过注册表自检 |
+| 可检索/检测的凭据类型 | **43 类** | 43 条真实规则，全部带正反样例并通过注册表自检 |
 | 可最小在线验证的类型 | **8 类** | GitHub PAT（valid+invalid 双例）、AWS AK/SK 配对、Gitee、GitLab、Slack、Telegram、npm、Hugging Face |
 | 明确不支持在线验证的类型 | 3 组 | OpenAI/Anthropic/Stripe（无"不枚举资源"的合规端点）、数据库连接串/口令（无法保证仅认证）、SSH 私钥/钉钉 Webhook（无目标或即用即失效）——**unsupported，检测能力保留** |
 
@@ -85,9 +85,9 @@
 
 ---
 
-## 三、支持的凭据类型列表（35 类，全带正反样例）
+## 三、支持的凭据类型列表（43 类，全带正反样例）
 
-规则文件：`backend/app/detection/rules/`（cloud / devplatform / services / keys_db）。
+规则文件：`backend/app/detection/rules/`（cloud / cloud_url / devplatform / services / keys_db 五组）。
 每条规则含：稳定 ID、类型、厂商、版本、许可证、正则、长度/熵窗、上下文要求、占位符过滤、
 配对规格、基础置信度、正反样例（正例必须命中、反例必须不误报——`test_rules_registry.py` 自检）。
 

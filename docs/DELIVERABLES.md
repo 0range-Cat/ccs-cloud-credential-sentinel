@@ -8,9 +8,9 @@
 | 交付件 | 位置 | 状态 |
 | --- | --- | --- |
 | 1. 工具源代码 | 本仓库（backend/ + frontend/ + scripts/），Git 全程可追溯 | ✅ |
-| 2. 技术说明书 | **[TECHNICAL_MANUAL.md](TECHNICAL_MANUAL.md)**：关键技术原理详细描述（七步检测管线/指纹去重/时间模型/增量机制/调度恢复/最小验证/安全设计）+ 逐模块代码功能实现说明 + 13 表结构 + API 清单 + 测试体系 | ✅ 定稿 |
-| 3. 支持的公开渠道列表 | **[SUPPORT_MATRIX.md](SUPPORT_MATRIX.md) §二**（合并清单，自包含）；明细 [SUPPORTED_CHANNELS.md](SUPPORTED_CHANNELS.md) | ✅ 定稿 |
-| 4. 支持的凭据类型列表 | **[SUPPORT_MATRIX.md](SUPPORT_MATRIX.md) §三**（35 类逐条+验证器关联）；明细 [SUPPORTED_CREDENTIALS.md](SUPPORTED_CREDENTIALS.md) | ✅ 定稿 |
+| 2. 技术说明书 | **[TECHNICAL_MANUAL技术说明书.md](TECHNICAL_MANUAL技术说明书.md)**：关键技术原理详细描述（七步检测管线/指纹去重/时间模型/增量机制/调度恢复/最小验证/安全设计）+ 逐模块代码功能实现说明 + 13 表结构 + API 清单 + 测试体系 | ✅ 定稿 |
+| 3. 支持的公开渠道列表 | **[SUPPORT_MATRIX渠道与凭据支持清单.md](SUPPORT_MATRIX渠道与凭据支持清单.md) §二**（合并清单，自包含）；明细 [SUPPORTED_CHANNELS.md](SUPPORTED_CHANNELS.md) | ✅ 定稿 |
+| 4. 支持的凭据类型列表 | **[SUPPORT_MATRIX渠道与凭据支持清单.md](SUPPORT_MATRIX渠道与凭据支持清单.md) §三**（35 类逐条+验证器关联）；明细 [SUPPORTED_CREDENTIALS.md](SUPPORTED_CREDENTIALS.md) | ✅ 定稿 |
 
 ## 二、评价维度 → 当前真实数字
 
@@ -30,7 +30,7 @@
 
 | 口径 | 数字 | 证据 |
 | --- | --- | --- |
-| 可检测凭据类型（真实规则+正反样例） | **35 类**（云厂商 9、代码与制品平台 7、AI/邮件/短信/OAuth 9、私钥/数据库/配置载体 10） | SUPPORTED_CREDENTIALS.md；tests/test_rules_registry.py 自检通过 |
+| 可检测凭据类型（真实规则+正反样例） | **43 类**（云厂商与云服务 10、代码与制品平台 12、AI/邮件/SaaS/OAuth 11、私钥/数据库/配置载体 10） | SUPPORTED_CREDENTIALS.md；tests/test_rules_registry.py 自检通过 |
 | 可最小在线验证的类型 | **8 类**：GitHub PAT（valid+invalid 双例）、AWS AK/SK 配对（STS GetCallerIdentity）、Gitee、GitLab、Slack、Telegram、npm、Hugging Face——后 6 类已在真实网络验证 invalid 语义（假凭据→正确拒绝；valid 需各平台自有凭据，用户可逐个回填）。OpenAI/Anthropic/Stripe 无"不枚举资源"的合规验证端点 → 如实标注 unsupported | EVALUATION.md §4.3；SUPPORTED_CREDENTIALS.md |
 | 检测能力 ≠ 验证能力 | 两者分开报告；无验证器的类型保留检测能力 | SUPPORTED_CREDENTIALS.md 口径说明 |
 
@@ -99,6 +99,6 @@
 
 ## 六、评价方式第 3 项（可扩展性）的专项文档
 
-**[EXTENSIBILITY.md](EXTENSIBILITY.md)**：三个插件契约（Collector/Rule/Verifier）设计与真实代码示例、
+**[EXTENSIBILITY可扩展性说明.md](EXTENSIBILITY可扩展性说明.md)**：三个插件契约（Collector/Rule/Verifier）设计与真实代码示例、
 新增渠道八步清单、数据库与前端零改动说明、**单日新增 6 采集器+2 验证器的实证数据表**、
 扩展过程中框架被持续加固的记录、边界与约束的如实说明。

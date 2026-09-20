@@ -7,9 +7,9 @@
 | [MASTER_PROMPT.md](MASTER_PROMPT.md) | 任务完整约束存档 | 已固化 |
 | [DELIVERABLES.md](DELIVERABLES.md) | 四项交付件与评价维度→真实数字对照 | 答辩口径单一来源 |
 | [REQUIREMENTS.md](REQUIREMENTS.md) | 需求、评价指标、范围、验收映射 | 已确认 |
-| [TECHNICAL_MANUAL.md](TECHNICAL_MANUAL.md) | **交付件2**：技术说明书（原理详述+逐模块实现） | 定稿 |
-| [SUPPORT_MATRIX.md](SUPPORT_MATRIX.md) | **交付件3+4**：渠道与凭据支持清单+数量口径（合一） | 定稿 |
-| [EXTENSIBILITY.md](EXTENSIBILITY.md) | 评价3：可扩展性与新渠道扩展说明（含实证） | 定稿 |
+| [TECHNICAL_MANUAL技术说明书.md](TECHNICAL_MANUAL技术说明书.md) | **交付件2**：技术说明书（原理详述+逐模块实现） | 定稿 |
+| [SUPPORT_MATRIX渠道与凭据支持清单.md](SUPPORT_MATRIX渠道与凭据支持清单.md) | **交付件3+4**：渠道与凭据支持清单+数量口径（合一） | 定稿 |
+| [EXTENSIBILITY可扩展性说明.md](EXTENSIBILITY可扩展性说明.md) | 评价3：可扩展性与新渠道扩展说明（含实证） | 定稿 |
 | [RESEARCH.md](RESEARCH.md) | 开源工具与平台接口调研（含日期与链接） | 持续更新 |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | 架构、数据流、模块边界、技术决策 | 阶段0基线 |
 | [INTERFACES.md](INTERFACES.md) | 实体、插件契约、API、状态模型 | 阶段0基线 |
@@ -21,7 +21,7 @@
 | [EVALUATION.md](EVALUATION.md) | 测试方法、结果、证据 | 随测试更新 |
 | [DEPLOYMENT.md](DEPLOYMENT.md) | Windows/Ubuntu/Docker 部署、备份恢复 | 随实现更新 |
 | [DEMO.md](DEMO.md) | GitHub 演示指南 | 阶段1提供 |
-| [TECHNICAL_MANUAL.md](TECHNICAL_MANUAL.md) | 技术说明书（原理/模块/实现说明） | 随实现完善 |
+| [TECHNICAL_MANUAL技术说明书.md](TECHNICAL_MANUAL技术说明书.md) | 技术说明书（原理/模块/实现说明） | 随实现完善 |
 | research/ | 子智能体调研草稿（draft-tools.md, draft-platforms.md） | 阶段0 |
 
 ## 目录结构说明

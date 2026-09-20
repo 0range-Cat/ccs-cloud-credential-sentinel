@@ -1,0 +1,21 @@
+# 云厂商 / 云服务 URL 凭据规则（第三批扩展）
+- id: cloud-presigned-url
+  title: 云对象存储预签名 URL（S3/OSS 签名参数）
+  type: cloud_presigned_url
+  vendor: cloud
+  version: 1
+  license: MIT
+  confidence: 85
+  patterns:
+    - '(https?://[^\s''"]{10,500}\?(?:[^\s''"]*&)*(?:X-Amz-Signature|Signature)=[0-9a-fA-F]{32,})'
+  min_length: 60
+  max_length: 1000
+  forbidden_secret_values:
+    - '(?i)(?:x-amz-)?signature=(?:EXAMPLE|SIGNATURE|[0-9a-f]{8})$'
+  tests:
+    positives:
+      - 'curl "https://bucket.oss-cn-hangzhou.aliyuncs.com/backup.zip?Expires=1789999999&OSSAccessKeyId=LTAI5tA1b2C3d4E5f6G7&Signature=8f2c94d1b7e35a06c9f8d2e41b7a9c638f2c94d1b7e35a06c9f8d2e41b7a9c63"'
+      - 'https://s3.us-east-1.amazonaws.com/corp/data?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=86400&X-Amz-Signature=5d6f8a2b4c6d8e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f'
+    negatives:
+      - 'https://bucket.oss-cn-hangzhou.aliyuncs.com/backup.zip?Expires=1789999999&OSSAccessKeyId=LTAI5tA1b2C3d4E5f6G7'
+      - 'https://example.com/download?sig=short'

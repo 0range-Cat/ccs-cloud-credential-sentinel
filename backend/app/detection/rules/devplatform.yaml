@@ -234,3 +234,95 @@
       - '"corpsecret": "Kl8mN3oP4qR5sT6uV7wX8yZ9a0B1c2D4"'
     negatives:
       - 'app_secret = short'
+
+
+# 第三批扩展：平台 Webhook / 托管平台认证 URL / SaaS 令牌
+- id: feishu-webhook
+  title: 飞书机器人 Webhook
+  type: feishu_webhook
+  vendor: bytedance
+  version: 1
+  license: MIT
+  confidence: 90
+  patterns:
+    - 'open\.feishu\.cn/open-apis/bot/v2/hook/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})'
+  secret_group: 1
+  min_length: 36
+  max_length: 36
+  tests:
+    positives:
+      - 'https://open.feishu.cn/open-apis/bot/v2/hook/8f2c94d1-b7e3-5a06-c9f8-d2e41b7a9c63'
+    negatives:
+      - 'https://open.feishu.cn/open-apis/bot/v2/hook/short-uuid'
+
+- id: slack-webhook
+  title: Slack Incoming Webhook
+  type: slack_webhook
+  vendor: slack
+  version: 1
+  license: MIT
+  confidence: 90
+  patterns:
+    - 'hooks\.slack\.com/services/T[A-Za-z0-9]{8,12}/B[A-Za-z0-9]{8,12}/[A-Za-z0-9]{18,24}'
+  min_length: 55
+  max_length: 80
+  tests:
+    positives:
+      - 'https://hooks.slack.com/services/T01234567/B01234567/AbCdEfGhIjKlMnOpQrSt'
+    negatives:
+      - 'https://hooks.slack.com/services/T123/B456/short'
+
+- id: gitlab-runner-token
+  title: GitLab Runner 认证令牌（glrt-）
+  type: gitlab_runner_token
+  vendor: gitlab
+  version: 1
+  license: MIT
+  confidence: 85
+  patterns:
+    - '(?<![A-Za-z0-9])(glrt-[A-Za-z0-9_-]{20,})(?![A-Za-z0-9_-])'
+  secret_group: 1
+  min_length: 24
+  tests:
+    positives:
+      - 'runner token: glrt-Ab12Cd34Ef56Gh78Ij90Kl12'
+    negatives:
+      - 'glrt-short'
+
+- id: git-http-basic-auth
+  title: Git 托管平台 HTTP 认证 URL（密码/令牌内嵌）
+  type: git_http_basic_auth
+  vendor: generic
+  version: 1
+  license: MIT
+  confidence: 85
+  patterns:
+    - 'https://[A-Za-z0-9._%+-]+:([^\s''"@:]{10,120})@(github\.com|gitlab\.com|gitee\.com|bitbucket\.org)'
+  secret_group: 1
+  min_length: 10
+  max_length: 120
+  forbidden_secret_values:
+    - '^(?:password|pass|passwd|token|mytoken|123456|example|changeme|xxxxx)$'
+  tests:
+    positives:
+      - 'git clone https://deploy:S3cretPassX9@gitlab.com/owner/repo.git'
+    negatives:
+      - 'git clone https://deploy:password@gitlab.com/owner/repo.git'
+
+- id: grafana-service-account-token
+  title: Grafana 服务账号令牌（glsa_）
+  type: grafana_service_account_token
+  vendor: grafana
+  version: 1
+  license: MIT
+  confidence: 85
+  patterns:
+    - '(?<![A-Za-z0-9])(glsa_[A-Za-z0-9]{32})(?![A-Za-z0-9])'
+  secret_group: 1
+  min_length: 37
+  max_length: 37
+  tests:
+    positives:
+      - 'GRAFANA_TOKEN=glsa_4a9Ck2XwQqLmN8vBzR5tYuIoP1sDfGhJ'
+    negatives:
+      - 'GRAFANA_TOKEN=glsa_short'
